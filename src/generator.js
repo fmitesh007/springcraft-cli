@@ -1,11 +1,13 @@
 import * as p from '@clack/prompts';
+import path from 'path';
 import { askQuestions } from './prompts.js';
 import { downloadProject } from './downloader.js';
 import { extract } from './extractor.js';
+import { runPostScaffold } from './postscaffold.js';
+import { savePreset } from './presets.js';
 
-export async function run(projectName) {
-  const answers = await askQuestions(projectName);
-
+export async function run(projectName, flags = {}) {
+  const answers = await askQuestions(projectName, flags);
   const spinner = p.spinner();
 
   spinner.start('Downloading project template...');
@@ -21,11 +23,19 @@ export async function run(projectName) {
     throw error;
   }
 
-  const runCommand = answers.buildTool === 'gradle-project' || answers.buildTool === 'gradle-project-kotlin'
-    ? './gradlew bootRun'
-    : './mvnw spring-boot:run';
+  const projectDir = path.resolve(process.cwd(), answers.artifactId);
 
-  p.outro(`✅ Project created successfully!
+  await runPostScaffold(projectDir, answers);
+
+  const presetName = await p.text({ message: 'Save as preset? (leave blank to skip)', placeholder: '' });
+  if (presetName && !p.isCancel(presetName) && presetName.trim() !== '') {
+    await savePreset(presetName.trim(), answers);
+    p.log.success(`Preset "${presetName}" saved.`);
+  }
+
+  const runCommand = answers.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run';
+
+  p.outro(`Project created successfully!
 
 Next steps:
   cd ${answers.artifactId}
