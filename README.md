@@ -54,6 +54,12 @@ curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/spr
 curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-macos && chmod +x springcraft-macos && ./springcraft-macos --help
 ```
 
+### One-liner (Windows PowerShell)
+
+```powershell
+iwr https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe; .\springcraft.exe --help
+```
+
 ### Install to PATH
 
 ```bash

@@ -15,10 +15,22 @@
 
 ## Installation
 
-### Quick Install (Linux/macOS)
+### Quick Install (Linux)
 
 ```bash
-curl -sL https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux -o springcraft && chmod +x springcraft
+curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux && chmod +x springcraft-linux
+```
+
+### Quick Install (macOS)
+
+```bash
+curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-macos && chmod +x springcraft-macos
+```
+
+### Quick Install (Windows PowerShell)
+
+```powershell
+iwr https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
 ```
 
 ### Download Binaries

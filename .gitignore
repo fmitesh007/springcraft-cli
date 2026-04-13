@@ -7,9 +7,6 @@ build/
 *.tgz
 bin/wrapper.cjs
 
-# GitHub Actions (tracked separately via workflow templates)
-.github/
-
 # Logs
 logs/
 *.log
