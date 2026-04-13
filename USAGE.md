@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [Installation](#installation)
 - [Path-Based Scaffolding](#path-based-scaffolding)
 - [Interactive Mode](#interactive-mode)
 - [CLI Flags](#cli-flags)
@@ -9,6 +10,32 @@
 - [Dependency Selection](#dependency-selection)
 - [Post-Scaffold Options](#post-scaffold-options)
 - [Examples](#examples)
+
+---
+
+## Installation
+
+### Quick Install (Linux/macOS)
+
+```bash
+curl -sL https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux -o springcraft && chmod +x springcraft
+```
+
+### Download Binaries
+
+| Platform | Download |
+|----------|----------|
+| Linux | `springcraft-linux` |
+| macOS | `springcraft-macos` |
+| Windows | `springcraft-win.exe` |
+
+From: https://github.com/fmitesh007/springcraft/releases/latest
+
+### Install to PATH
+
+```bash
+sudo mv springcraft-* /usr/local/bin/springcraft
+```
 
 ---
 

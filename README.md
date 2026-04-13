@@ -42,29 +42,38 @@ springcraft . --maven --java --java-version 17 --deps web,data-jpa,lombok
 
 ## Installation
 
-### From npm (global)
+### One-liner (Linux)
+
+```bash
+curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux && chmod +x springcraft-linux && ./springcraft-linux --help
+```
+
+### One-liner (macOS)
+
+```bash
+curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-macos && chmod +x springcraft-macos && ./springcraft-macos --help
+```
+
+### Install to PATH
+
+```bash
+sudo mv springcraft-* /usr/local/bin/springcraft
+springcraft --help
+```
+
+### From npm (requires Node.js)
 
 ```bash
 npm install -g springcraft
 ```
 
-### From source
+### From source (requires Node.js)
 
 ```bash
 git clone https://github.com/fmitesh007/springcraft.git
 cd springcraft
 npm install
 npm link
-```
-
-### Add to PATH (if needed)
-
-```bash
-# Fish shell
-fish_add_path (npm config get prefix)/bin
-
-# Bash/Zsh
-export PATH="$PATH:$(npm config get prefix)/bin"
 ```
 
 ## Usage
