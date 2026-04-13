@@ -46,10 +46,11 @@ function buildUrl(options) {
 }
 
 export async function run(flags = {}) {
-  const inCurrentDir = flags.inCurrentDir || false;
+  const targetPath = flags.targetPath;
 
-  if (inCurrentDir) {
-    const dirName = path.basename(process.cwd());
+  if (targetPath) {
+    process.chdir(targetPath);
+    const dirName = path.basename(targetPath);
     if (!flags.artifactId) {
       flags.artifactId = dirName;
     }
@@ -75,7 +76,9 @@ export async function run(flags = {}) {
     answers = await askQuestions(flags);
   }
 
-  const projectDir = inCurrentDir ? process.cwd() : path.resolve(process.cwd(), answers.artifactId);
+  const projectDir = targetPath
+    ? path.resolve(targetPath, answers.artifactId)
+    : path.resolve(process.cwd(), answers.artifactId);
 
   const spinner = p.spinner();
 
@@ -85,11 +88,12 @@ export async function run(flags = {}) {
     spinner.stop('Download complete.');
 
     spinner.start('Extracting files...');
-    await extract(zipBuffer, answers.artifactId, { inCurrentDir });
+    await extract(zipBuffer, answers.artifactId, { targetPath });
     spinner.stop('Extraction complete.');
   } catch (error) {
-    spinner.stop('Failed.');
-    throw error;
+    spinner.stop('');
+    console.error(`\n  ❌ ${error.message}\n`);
+    process.exit(1);
   }
 
   await runPostScaffold(projectDir, answers);
@@ -102,7 +106,7 @@ export async function run(flags = {}) {
 
   const runCommand = answers.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run';
 
-  const cdCommand = inCurrentDir ? '' : `  cd ${answers.artifactId}\n`;
+  const cdCommand = targetPath ? '' : `  cd ${answers.artifactId}\n`;
 
   p.outro(`Project created successfully!
 

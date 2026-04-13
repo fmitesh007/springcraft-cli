@@ -16,7 +16,7 @@
 Run without any flags to use the interactive prompts:
 
 ```bash
-create-spring-app my-spring-app
+springcraft my-spring-app
 ```
 
 ### Create in Current Directory
@@ -25,13 +25,13 @@ Use `.` to scaffold a project in the current directory:
 
 ```bash
 cd my-directory
-create-spring-app .
+springcraft .
 ```
 
 The directory name is used as the project name. Use `--artifact` to override:</p>
 
 ```bash
-create-spring-app . --artifact my-custom-name
+springcraft . --artifact my-custom-name
 ```
 
 ### Prompt Flow
@@ -71,7 +71,7 @@ All options can be passed via CLI flags for full automation:
 |------|-------------|---------|
 | `--help`, `-h` | Show help | `--help` |
 | `--version`, `-v` | Show version | `--version` |
-| `.` | Use current directory | `create-spring-app .` |
+| `.` | Use current directory | `springcraft .` |
 | `--maven` | Use Maven build tool | `--maven` |
 | `--gradle` | Use Gradle (Groovy DSL) | `--gradle` |
 | `--gradle-kotlin` | Use Gradle (Kotlin DSL) | `--gradle-kotlin` |
@@ -94,7 +94,7 @@ All options can be passed via CLI flags for full automation:
 ### Flag-Based Example
 
 ```bash
-create-spring-app my-api \
+springcraft my-api \
   --maven \
   --java \
   --java-version 21 \
@@ -120,12 +120,12 @@ After scaffolding, you'll be prompted:
 Save as preset? (leave blank to skip)
 ```
 
-Enter a name to save. Presets are stored at `~/.create-spring-app/presets.json`.
+Enter a name to save. Presets are stored at `~/.springcraft/presets.json`.
 
 ### Using a Preset
 
 ```bash
-create-spring-app new-api --preset my-api-preset
+springcraft new-api --preset my-api-preset
 ```
 
 ### Preset Format
@@ -246,13 +246,13 @@ Open project directly in:
 ### Minimal REST API
 
 ```bash
-create-spring-app rest-api --maven --java --java-version 17 --boot 3.5.0 --deps web,validation
+springcraft rest-api --maven --java --java-version 17 --boot 3.5.0 --deps web,validation
 ```
 
 ### Full-Stack with PostgreSQL
 
 ```bash
-create-spring-app fullstack-app \
+springcraft fullstack-app \
   --gradle \
   --java \
   --java-version 21 \
@@ -265,7 +265,7 @@ create-spring-app fullstack-app \
 ### Microservice
 
 ```bash
-create-spring-app user-service \
+springcraft user-service \
   --gradle-kotlin \
   --kotlin \
   --java-version 21 \
@@ -278,7 +278,7 @@ create-spring-app user-service \
 ### React Full-Stack
 
 ```bash
-create-spring-app react-spring \
+springcraft react-spring \
   --maven \
   --java \
   --java-version 17 \
@@ -329,7 +329,7 @@ The specified version may be too old. Try:
 Check your presets file:
 
 ```bash
-cat ~/.create-spring-app/presets.json
+cat ~/.springcraft/presets.json
 ```
 
 ### TTY initialization failed
@@ -337,5 +337,5 @@ cat ~/.create-spring-app/presets.json
 This occurs when running in non-interactive environments (CI/CD, scripts). Use `--dry-run` to verify the URL, or pipe input:
 
 ```bash
-echo -e "\n\n" | create-spring-app my-app
+echo -e "\n\n" | springcraft my-app
 ```

@@ -328,7 +328,7 @@ ${hasDocker}${envSection}${frontendSection}
 ---
 
 <p align="center">
-  Built with ❤️ using <a href="https://github.com/yourrepo/create-spring-app">SpringCraft</a>
+  Built with ❤️ using <a href="https://github.com/yourrepo/springcraft">SpringCraft</a>
 </p>
 `;
 
@@ -364,7 +364,7 @@ frontend/dist/
     }
 
     execSync('git add .', { cwd: projectDir, stdio: 'pipe' });
-    execSync('git commit -m "Initial commit via create-spring-app"', { cwd: projectDir, stdio: 'pipe' });
+    execSync('git commit -m "Initial commit via springcraft"', { cwd: projectDir, stdio: 'pipe' });
     p.log.success('Git repository initialized.');
   } catch (e) {
     p.log.warn('Git initialization failed. Initialize manually if needed.');

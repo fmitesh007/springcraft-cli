@@ -1,9 +1,9 @@
 {
-  "name": "create-spring-app",
+  "name": "springcraft",
   "version": "0.2.0",
   "type": "module",
   "bin": {
-    "create-spring-app": "./bin/index.js"
+    "springcraft": "./bin/index.js"
   },
   "engines": {
     "node": ">=18"

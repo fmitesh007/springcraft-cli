@@ -1,4 +1,4 @@
-# create-spring-app
+# springcraft
 
 > A modern CLI scaffolder for Spring Boot projects — inspired by Vite's developer experience.
 
@@ -23,20 +23,20 @@
 ### Interactive Mode
 
 ```bash
-npx create-spring-app my-spring-app
+npx springcraft my-spring-app
 ```
 
 ### Current Directory
 
 ```bash
 cd my-directory
-create-spring-app .
+springcraft .
 ```
 
 ### Automated Mode
 
 ```bash
-create-spring-app my-app --maven --java --java-version 17 --boot 3.5.0 --deps web,data-jpa,lombok
+springcraft my-app --maven --java --java-version 17 --boot 3.5.0 --deps web,data-jpa,lombok
 ```
 
 ## Installation
@@ -44,14 +44,14 @@ create-spring-app my-app --maven --java --java-version 17 --boot 3.5.0 --deps we
 ### From npm (global)
 
 ```bash
-npm install -g create-spring-app
+npm install -g springcraft
 ```
 
 ### From source
 
 ```bash
 git clone <repository-url>
-cd create-spring-app
+cd springcraft
 npm install
 npm link
 ```
@@ -63,7 +63,7 @@ See [USAGE.md](./USAGE.md) for detailed documentation.
 ## Project Structure
 
 ```
-create-spring-app/
+springcraft/
 ├── bin/
 │   └── index.js          # CLI entry point
 ├── src/

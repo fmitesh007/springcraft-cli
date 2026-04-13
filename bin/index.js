@@ -2,14 +2,16 @@
 
 import { run } from '../src/generator.js';
 import { loadPreset, listPresets } from '../src/presets.js';
+import path from 'path';
 
 function showHelp() {
   console.log(`
-create-spring-app - Scaffold Spring Boot projects
+springcraft - Scaffold Spring Boot projects
 
 Usage:
-  create-spring-app .                    Create project in current directory
-  create-spring-app                      Interactive mode
+  springcraft .                            Create in current directory
+  springcraft /path/to/project             Create in specific directory
+  springcraft                              Interactive mode
 
 Options:
   --maven|--gradle|--gradle-kotlin      Build tool
@@ -29,16 +31,16 @@ Options:
   -v, --version                        Show version
 
 Examples:
-  create-spring-app .                    Create in current directory
-  create-spring-app                       Interactive mode
-  create-spring-app --maven --java --java-version 17 --deps web,data-jpa
-  create-spring-app --preset my-preset
-  create-spring-app --dry-run
+  springcraft .                            Create in current directory
+  springcraft ~/projects/my-api            Create in specific directory
+  springcraft --maven --java --java-version 17 --deps web,data-jpa
+  springcraft --preset my-preset
+  springcraft --dry-run
 `);
 }
 
 function showVersion() {
-  console.log('create-spring-app v0.2.0');
+  console.log('springcraft v0.2.0');
 }
 
 function parseArgs(argv) {
@@ -91,15 +93,18 @@ function parseArgs(argv) {
         break;
       case '--dry-run': flags.dryRun = true; break;
       case '--preset':
-        if (i + 1 < argv.length) {
-          const presetName = argv[++i];
-          const preset = loadPreset(presetName);
-          if (preset) {
-            Object.assign(flags, preset);
-          } else {
-            console.error(`Preset "${presetName}" not found.`);
-            process.exit(1);
-          }
+        if (i + 1 >= argv.length || argv[i + 1].startsWith('-')) {
+          console.error('Error: --preset requires a preset name');
+          console.error('Run: springcraft --list-presets to see available presets');
+          process.exit(1);
+        }
+        const presetName = argv[++i];
+        const preset = loadPreset(presetName);
+        if (preset) {
+          Object.assign(flags, preset);
+        } else {
+          console.error(`Preset "${presetName}" not found.`);
+          process.exit(1);
         }
         break;
       case '--list-presets':
@@ -113,8 +118,9 @@ function parseArgs(argv) {
         process.exit(0);
 
       default:
-        if (arg === '.') {
-          flags.inCurrentDir = true;
+        if (arg === '.' || arg.startsWith('/') || arg.startsWith('~') || arg.startsWith('./')) {
+          const targetPath = arg === '.' ? process.cwd() : path.resolve(arg);
+          flags.targetPath = targetPath;
         }
     }
   }
