@@ -4,11 +4,8 @@ pkgbase = springcraft
 	pkgrel = 1
 	url = https://github.com/fmitesh007/springcraft-cli
 	arch = x86_64
-	arch = aarch64
 	license = MIT
-	source_x86_64 = springcraft-linux
-	sha256sums_x86_64 = SKIP
-	source_aarch64 = springcraft-linux
-	sha256sums_aarch64 = SKIP
+	source = https://github.com/fmitesh007/springcraft-cli/releases/download/v0.2.0/springcraft-linux
+	sha256sums = 39a27834d8bf5933dc71e2fd4aaf08b16b3069fa7cda169cb935394a17b78b7a
 
 pkgname = springcraft
