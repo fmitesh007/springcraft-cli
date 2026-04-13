@@ -51,26 +51,26 @@ yay -S springcraft
 paru -S springcraft
 ```
 
-### macOS/Linux (Homebrew)
+### macOS/Linux (Homebrew) (under maintenance)
 
 ```bash
 brew tap fmitesh007/springcraft
 brew install springcraft
 ```
 
-### One-liner (Linux)
+### Linux
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
 ```
 
-### One-liner (macOS)
+### MacOS
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
 ```
 
-### One-liner (Windows PowerShell)
+### Windows (powershell)
 
 ```powershell
 irm https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.ps1 | iex
