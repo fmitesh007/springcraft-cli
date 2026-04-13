@@ -93,7 +93,7 @@ sudo mv springcraft-macos /usr/local/bin/springcraft
 irm https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
 ```
 
-### From npm (requires Node.js)
+### From npm (requires Node.js) (under maintenance)
 
 ```bash
 npm install -g springcraft
