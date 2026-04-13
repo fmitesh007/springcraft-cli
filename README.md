@@ -42,29 +42,55 @@ springcraft . --maven --java --java-version 17 --deps web,data-jpa,lombok
 
 ## Installation
 
+### Arch Linux (AUR)
+
+```bash
+# Using yay or paru
+yay -S springcraft
+# or
+paru -S springcraft
+```
+
+### macOS/Linux (Homebrew)
+
+```bash
+brew tap fmitesh007/springcraft
+brew install springcraft
+```
+
 ### One-liner (Linux)
 
 ```bash
-curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux && chmod +x springcraft-linux && ./springcraft-linux --help
+curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
 ```
 
 ### One-liner (macOS)
 
 ```bash
-curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-macos && chmod +x springcraft-macos && ./springcraft-macos --help
+curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
 ```
 
 ### One-liner (Windows PowerShell)
 
 ```powershell
-iwr https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe; .\springcraft.exe --help
+irm https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.ps1 | iex
 ```
 
-### Install to PATH
+### Manual Download
 
 ```bash
-sudo mv springcraft-* /usr/local/bin/springcraft
-springcraft --help
+# Linux
+curl -sLO https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-linux
+chmod +x springcraft-linux
+sudo mv springcraft-linux /usr/local/bin/springcraft
+
+# macOS
+curl -sLO https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-macos
+chmod +x springcraft-macos
+sudo mv springcraft-macos /usr/local/bin/springcraft
+
+# Windows
+irm https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
 ```
 
 ### From npm (requires Node.js)
@@ -76,8 +102,8 @@ npm install -g springcraft
 ### From source (requires Node.js)
 
 ```bash
-git clone https://github.com/fmitesh007/springcraft.git
-cd springcraft
+git clone https://github.com/fmitesh007/springcraft-cli.git
+cd springcraft-cli
 npm install
 npm link
 ```
