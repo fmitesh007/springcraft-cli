@@ -26,6 +26,13 @@
 npx create-spring-app my-spring-app
 ```
 
+### Current Directory
+
+```bash
+cd my-directory
+create-spring-app .
+```
+
 ### Automated Mode
 
 ```bash

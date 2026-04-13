@@ -1,89 +1,131 @@
 #!/usr/bin/env node
 
 import { run } from '../src/generator.js';
-import { loadPreset } from '../src/presets.js';
+import { loadPreset, listPresets } from '../src/presets.js';
 
-const VALID_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9-_]*$/;
+function showHelp() {
+  console.log(`
+create-spring-app - Scaffold Spring Boot projects
+
+Usage:
+  create-spring-app .                    Create project in current directory
+  create-spring-app                      Interactive mode
+
+Options:
+  --maven|--gradle|--gradle-kotlin      Build tool
+  --java|--kotlin|--groovy               Language
+  --java-version <version>               Java version (11, 17, 21, 24)
+  --boot <version>                      Spring Boot version (3.5.0, 3.4.5, 3.3.11, 3.2.12)
+  --group <groupId>                     Group ID (e.g., com.example)
+  --artifact <id>                       Artifact ID
+  --package <name>                      Package name
+  --desc "<description>"                Project description
+  --jar|--war                           Packaging type
+  --deps <dep1,dep2,...>               Dependencies
+  --dry-run                             Show download URL without creating
+  --preset <name>                      Use saved preset
+  --list-presets                        List saved presets
+  -h, --help                           Show this help
+  -v, --version                        Show version
+
+Examples:
+  create-spring-app .                    Create in current directory
+  create-spring-app                       Interactive mode
+  create-spring-app --maven --java --java-version 17 --deps web,data-jpa
+  create-spring-app --preset my-preset
+  create-spring-app --dry-run
+`);
+}
+
+function showVersion() {
+  console.log('create-spring-app v0.2.0');
+}
 
 function parseArgs(argv) {
   const flags = {};
-  const args = [];
 
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
 
     switch (arg) {
+      case '-h':
+      case '--help':
+        showHelp();
+        process.exit(0);
+
+      case '-v':
+      case '--version':
+        showVersion();
+        process.exit(0);
+
       case '--maven': flags.buildTool = 'maven-project'; break;
       case '--gradle': flags.buildTool = 'gradle-project'; break;
       case '--gradle-kotlin': flags.buildTool = 'gradle-project-kotlin'; break;
       case '--java': flags.language = 'java'; break;
       case '--kotlin': flags.language = 'kotlin'; break;
       case '--groovy': flags.language = 'groovy'; break;
+
       case '--java-version':
-        flags.javaVersion = argv[++i];
+        if (i + 1 < argv.length) flags.javaVersion = argv[++i];
         break;
       case '--boot':
-        flags.springBootVersion = argv[++i];
+        if (i + 1 < argv.length) flags.springBootVersion = argv[++i];
         break;
       case '--group':
-        flags.groupId = argv[++i];
+        if (i + 1 < argv.length) flags.groupId = argv[++i];
         break;
       case '--artifact':
-        flags.artifactId = argv[++i];
+        if (i + 1 < argv.length) flags.artifactId = argv[++i];
         break;
       case '--package':
-        flags.packageName = argv[++i];
+        if (i + 1 < argv.length) flags.packageName = argv[++i];
         break;
       case '--desc':
-        flags.description = argv[++i];
+      case '--description':
+        if (i + 1 < argv.length) flags.description = argv[++i];
         break;
       case '--jar': flags.packaging = 'jar'; break;
       case '--war': flags.packaging = 'war'; break;
       case '--deps':
-        flags.dependencies = argv[++i].split(',').map(d => d.trim());
+        if (i + 1 < argv.length) flags.dependencies = argv[++i].split(',').map(d => d.trim());
         break;
       case '--dry-run': flags.dryRun = true; break;
       case '--preset':
-        const presetName = argv[++i];
-        const preset = loadPreset(presetName);
-        if (preset) {
-          Object.assign(flags, preset);
-        } else {
-          console.error(`Preset "${presetName}" not found.`);
-          process.exit(1);
+        if (i + 1 < argv.length) {
+          const presetName = argv[++i];
+          const preset = loadPreset(presetName);
+          if (preset) {
+            Object.assign(flags, preset);
+          } else {
+            console.error(`Preset "${presetName}" not found.`);
+            process.exit(1);
+          }
         }
         break;
+      case '--list-presets':
+        const presets = listPresets();
+        if (presets.length === 0) {
+          console.log('No presets found.');
+        } else {
+          console.log('Available presets:');
+          presets.forEach(p => console.log(`  - ${p}`));
+        }
+        process.exit(0);
+
       default:
-        if (!arg.startsWith('-')) args.push(arg);
+        if (arg === '.') {
+          flags.inCurrentDir = true;
+        }
     }
   }
 
-  return { projectName: args[0], flags };
+  return flags;
 }
 
-const { projectName, flags } = parseArgs(process.argv);
-
-if (!projectName || !VALID_NAME_PATTERN.test(projectName)) {
-  console.error('Usage: create-spring-app <project-name> [options]');
-  console.error('');
-  console.error('Options:');
-  console.error('  --maven|--gradle|--gradle-kotlin    Build tool');
-  console.error('  --java|--kotlin|--groovy            Language');
-  console.error('  --java-version <17|21|11|24>        Java version');
-  console.error('  --boot <3.5.0|3.4.5|3.3.11|3.2.12>  Spring Boot version');
-  console.error('  --group <groupId>                   Group ID');
-  console.error('  --artifact <artifactId>             Artifact ID');
-  console.error('  --package <packageName>             Package name');
-  console.error('  --desc "<description>"              Description');
-  console.error('  --jar|--war                         Packaging');
-  console.error('  --deps <dep1,dep2,...>             Dependencies');
-  console.error('  --dry-run                           Dry run mode');
-  console.error('  --preset <name>                    Use saved preset');
-  process.exit(1);
-}
+const flags = parseArgs(process.argv);
 
 try {
-  await run(projectName, flags);
+  run(flags);
 } catch (error) {
   console.error(`Error: ${error.message}`);
   process.exit(1);

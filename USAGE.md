@@ -19,6 +19,21 @@ Run without any flags to use the interactive prompts:
 create-spring-app my-spring-app
 ```
 
+### Create in Current Directory
+
+Use `.` to scaffold a project in the current directory:
+
+```bash
+cd my-directory
+create-spring-app .
+```
+
+The directory name is used as the project name. Use `--artifact` to override:</p>
+
+```bash
+create-spring-app . --artifact my-custom-name
+```
+
 ### Prompt Flow
 
 1. **Dependency Mode** — Choose how to select dependencies
@@ -54,6 +69,9 @@ All options can be passed via CLI flags for full automation:
 
 | Flag | Description | Example |
 |------|-------------|---------|
+| `--help`, `-h` | Show help | `--help` |
+| `--version`, `-v` | Show version | `--version` |
+| `.` | Use current directory | `create-spring-app .` |
 | `--maven` | Use Maven build tool | `--maven` |
 | `--gradle` | Use Gradle (Groovy DSL) | `--gradle` |
 | `--gradle-kotlin` | Use Gradle (Kotlin DSL) | `--gradle-kotlin` |
@@ -71,6 +89,7 @@ All options can be passed via CLI flags for full automation:
 | `--deps <list>` | Comma-separated deps | `--deps web,data-jpa,lombok` |
 | `--dry-run` | Show URL without downloading | `--dry-run` |
 | `--preset <name>` | Load saved preset | `--preset my-preset` |
+| `--list-presets` | List saved presets | `--list-presets` |
 
 ### Flag-Based Example
 

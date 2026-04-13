@@ -12,6 +12,7 @@ export async function downloadProject(options) {
     description,
     packaging,
     dependencies,
+    dryRun,
   } = options;
 
   const params = new URLSearchParams({
@@ -29,6 +30,12 @@ export async function downloadProject(options) {
   });
 
   const url = `${SPRING_INITIALIZR_URL}?${params.toString()}`;
+
+  if (dryRun) {
+    console.log('\n  Dry run - would call:\n');
+    console.log(`  ${url}\n`);
+    process.exit(0);
+  }
 
   const res = await fetch(url);
 

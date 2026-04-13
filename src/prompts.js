@@ -141,10 +141,15 @@ async function fzfSearch(deps) {
 
 const REQUIRED_FIELDS = ['buildTool', 'language', 'javaVersion', 'springBootVersion', 'groupId', 'artifactId', 'packageName', 'description', 'packaging'];
 
-export async function askQuestions(projectName, flags = {}) {
-  if (flags.buildTool && flags.language && flags.javaVersion && flags.springBootVersion && flags.groupId && flags.artifactId && flags.packageName && flags.description && flags.packaging) {
-    p.log.info('Using CLI flags - skipping prompts.');
-    return { ...flags, dependencies: flags.dependencies || [] };
+export async function askQuestions(flags = {}) {
+  const hasAllRequired = REQUIRED_FIELDS.every(field => !!flags[field]);
+
+  if (hasAllRequired && flags.dependencies !== undefined) {
+    console.log('\n  Using CLI flags - skipping prompts.\n');
+    return { 
+      ...flags, 
+      dependencies: flags.dependencies || [] 
+    };
   }
 
   p.intro('Create Spring Boot Project');
@@ -160,17 +165,121 @@ export async function askQuestions(projectName, flags = {}) {
 
   if (p.isCancel(depMode)) { p.cancel('Cancelled.'); process.exit(0); }
 
-  const answers = await p.group({
-    buildTool: () => p.select({ message: 'Build tool:', options: [{ value: 'maven-project', label: 'Maven' }, { value: 'gradle-project', label: 'Gradle (Groovy DSL)' }, { value: 'gradle-project-kotlin', label: 'Gradle (Kotlin DSL)' }], initialValue: flags.buildTool }),
-    language: () => p.select({ message: 'Language:', options: [{ value: 'java', label: 'Java' }, { value: 'kotlin', label: 'Kotlin' }, { value: 'groovy', label: 'Groovy' }], initialValue: flags.language }),
-    springBootVersion: () => p.select({ message: 'Spring Boot version:', options: [{ value: '3.5.0', label: '3.5.0 (recommended)' }, { value: '3.4.5', label: '3.4.5' }, { value: '3.3.11', label: '3.3.11' }, { value: '3.2.12', label: '3.2.12' }], initialValue: flags.springBootVersion }),
-    javaVersion: () => p.select({ message: 'Java version:', options: [{ value: '17', label: '17 (LTS, recommended)' }, { value: '21', label: '21 (LTS)' }, { value: '11', label: '11' }, { value: '24', label: '24 (latest)' }], initialValue: flags.javaVersion }),
-    groupId: () => p.text({ message: 'Group ID:', placeholder: 'com.example', default: flags.groupId || 'com.example', validate: v => { if (!v?.trim()) return 'Required'; if (!/^[a-z][a-z0-9._]*$/i.test(v)) return 'Invalid format'; } }),
-    artifactId: () => p.text({ message: 'Artifact ID:', placeholder: projectName, default: flags.artifactId || projectName, validate: v => { if (!v?.trim()) return 'Required'; if (!/^[a-zA-Z][a-zA-Z0-9._-]*$/.test(v)) return 'Invalid format'; } }),
-    packageName: ({ results }) => { const g = results.groupId || flags.groupId || 'com.example'; const a = results.artifactId || flags.artifactId || projectName; const def = g + '.' + a.replace(/[^a-zA-Z0-9]/g, ''); return p.text({ message: 'Package name:', placeholder: def, default: flags.packageName || def, validate: v => { if (!v?.trim()) return 'Required'; if (!/^[a-z][a-zA-Z0-9._]*$/.test(v)) return 'Invalid'; } }); },
-    description: () => p.text({ message: 'Description:', placeholder: 'A brief description', default: flags.description || 'Demo project for Spring Boot' }),
-    packaging: () => p.select({ message: 'Packaging:', options: [{ value: 'jar', label: 'Jar (recommended)' }, { value: 'war', label: 'War' }], initialValue: flags.packaging }),
-  }, { onCancel: () => { p.cancel('Cancelled.'); process.exit(0); } });
+  const artifactId = await p.text({
+    message: 'Project name:',
+    placeholder: 'my-spring-app',
+    default: flags.artifactId,
+    validate: v => {
+      if (!v?.trim()) return 'Required';
+      if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(v)) return 'Letters, numbers, hyphens, underscores only';
+    },
+  });
+
+  if (p.isCancel(artifactId)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const autoGroupId = `com.${artifactId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+  const autoPackageName = `${autoGroupId}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`;
+  const autoDescription = `Project ${artifactId}`;
+
+  const buildTool = await p.select({
+    message: 'Build tool:',
+    options: [
+      { value: 'maven-project', label: 'Maven' },
+      { value: 'gradle-project', label: 'Gradle (Groovy DSL)' },
+      { value: 'gradle-project-kotlin', label: 'Gradle (Kotlin DSL)' },
+    ],
+    initialValue: flags.buildTool,
+  });
+
+  if (p.isCancel(buildTool)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const language = await p.select({
+    message: 'Language:',
+    options: [
+      { value: 'java', label: 'Java' },
+      { value: 'kotlin', label: 'Kotlin' },
+      { value: 'groovy', label: 'Groovy' },
+    ],
+    initialValue: flags.language,
+  });
+
+  if (p.isCancel(language)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const springBootVersion = await p.select({
+    message: 'Spring Boot version:',
+    options: [
+      { value: '3.5.0', label: '3.5.0 (recommended)' },
+      { value: '3.4.5', label: '3.4.5' },
+      { value: '3.3.11', label: '3.3.11' },
+      { value: '3.2.12', label: '3.2.12' },
+    ],
+    initialValue: flags.springBootVersion,
+  });
+
+  if (p.isCancel(springBootVersion)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const javaVersion = await p.select({
+    message: 'Java version:',
+    options: [
+      { value: '17', label: '17 (LTS, recommended)' },
+      { value: '21', label: '21 (LTS)' },
+      { value: '11', label: '11' },
+      { value: '24', label: '24 (latest)' },
+    ],
+    initialValue: flags.javaVersion,
+  });
+
+  if (p.isCancel(javaVersion)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const groupIdInput = await p.text({
+    message: 'Group ID:',
+    placeholder: autoGroupId,
+    default: flags.groupId || autoGroupId,
+    validate: v => {
+      if (!v?.trim()) return 'Required';
+      if (!/^[a-z][a-z0-9._]*$/i.test(v)) return 'Invalid format';
+    },
+  });
+
+  if (p.isCancel(groupIdInput)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const groupId = groupIdInput?.trim() ? groupIdInput : autoGroupId;
+
+  const groupIdForPackage = groupIdInput?.trim() || autoGroupId;
+  const packageNameInput = await p.text({
+    message: 'Package name:',
+    placeholder: `${groupIdForPackage}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`,
+    default: flags.packageName || `${groupIdForPackage}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`,
+    validate: v => {
+      if (!v?.trim()) return 'Required';
+      if (!/^[a-z][a-zA-Z0-9._]*$/.test(v)) return 'Invalid';
+    },
+  });
+
+  if (p.isCancel(packageNameInput)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const packageName = packageNameInput?.trim() ? packageNameInput : `${groupIdForPackage}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+  const descriptionInput = await p.text({
+    message: 'Description:',
+    placeholder: autoDescription,
+    default: flags.description || autoDescription,
+  });
+
+  if (p.isCancel(descriptionInput)) { p.cancel('Cancelled.'); process.exit(0); }
+
+  const description = descriptionInput?.trim() ? descriptionInput : autoDescription;
+
+  const packaging = await p.select({
+    message: 'Packaging:',
+    options: [
+      { value: 'jar', label: 'Jar (recommended)' },
+      { value: 'war', label: 'War' },
+    ],
+    initialValue: flags.packaging,
+  });
+
+  if (p.isCancel(packaging)) { p.cancel('Cancelled.'); process.exit(0); }
 
   let dependencies = [];
   if (depMode === 'simple') {
@@ -184,5 +293,5 @@ export async function askQuestions(projectName, flags = {}) {
     await new Promise(r => setTimeout(r, 500));
   }
 
-  return { ...answers, dependencies };
+  return { artifactId, buildTool, language, springBootVersion, javaVersion, groupId, packageName, description, packaging, dependencies };
 }
