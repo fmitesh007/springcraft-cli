@@ -191,10 +191,12 @@ After project creation, you'll be offered:
 
 ### Frontend Scaffolding
 
-Add a frontend with Vite or Angular:
+Add a frontend with Vite, Svelte, or Angular:
 - React (JavaScript)
 - React (TypeScript)
 - Vue
+- Svelte
+- SolidJS
 - Angular
 
 ### Docker Compose

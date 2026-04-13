@@ -235,10 +235,6 @@ export async function askQuestions(flags = {}) {
     message: 'Group ID:',
     placeholder: autoGroupId,
     default: flags.groupId || autoGroupId,
-    validate: v => {
-      if (!v?.trim()) return 'Required';
-      if (!/^[a-z][a-z0-9._]*$/i.test(v)) return 'Invalid format';
-    },
   });
 
   if (p.isCancel(groupIdInput)) { p.cancel('Cancelled.'); process.exit(0); }
@@ -250,10 +246,6 @@ export async function askQuestions(flags = {}) {
     message: 'Package name:',
     placeholder: `${groupIdForPackage}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`,
     default: flags.packageName || `${groupIdForPackage}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`,
-    validate: v => {
-      if (!v?.trim()) return 'Required';
-      if (!/^[a-z][a-zA-Z0-9._]*$/.test(v)) return 'Invalid';
-    },
   });
 
   if (p.isCancel(packageNameInput)) { p.cancel('Cancelled.'); process.exit(0); }

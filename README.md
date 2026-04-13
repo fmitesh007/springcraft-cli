@@ -15,7 +15,7 @@
 - 📖 **Smart README** — Auto-generated project documentation
 - 🔧 **Presets** — Save and reuse your favorite configurations
 - 🏷️ **CLI Flags** — Full automation support for CI/CD pipelines
-- 🎨 **Frontend Scaffolding** — Add React, Vue, or Angular in one step
+- 🎨 **Frontend Scaffolding** — Add React, Vue, Svelte, SolidJS, or Angular in one step
 - 🗄️ **Git Initialization** — Automatic git setup with sensible defaults
 
 ## Quick Start

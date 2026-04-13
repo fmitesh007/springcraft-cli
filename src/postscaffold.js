@@ -42,31 +42,31 @@ async function askFrontend(projectDir, answers) {
     message: 'Add a frontend?',
     options: [
       { value: 'none', label: 'None' },
-      { value: 'react-js', label: 'React (JavaScript)' },
-      { value: 'react-ts', label: 'React (TypeScript)' },
-      { value: 'vue', label: 'Vue' },
+      { value: 'vite', label: 'Yes (Vite)' },
       { value: 'angular', label: 'Angular' },
     ],
   });
 
   if (p.isCancel(choice) || choice === 'none') return;
 
-  const commands = {
-    'react-js': 'npm create vite@latest frontend -- --template react',
-    'react-ts': 'npm create vite@latest frontend -- --template react-ts',
-    'vue': 'npm create vite@latest frontend -- --template vue',
-    'angular': 'ng new frontend --directory frontend',
-  };
-
-  const cmd = commands[choice];
-  if (cmd) {
+  if (choice === 'angular') {
     try {
-      p.log.step(`Running: ${cmd}`);
-      execSync(cmd, { cwd: projectDir, stdio: 'inherit' });
-      p.log.success('Frontend scaffolded.');
+      p.log.step('Running: npx @angular/cli new frontend');
+      execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', { cwd: projectDir, stdio: 'inherit' });
+      p.log.success('Angular frontend scaffolded.');
     } catch (e) {
-      p.log.warn('Frontend scaffolding failed. Install manually if needed.');
+      p.log.warn('Angular scaffolding failed. Install manually if needed.');
     }
+    return;
+  }
+
+  try {
+    p.log.step('Running: npm create vite@latest');
+    p.log.info('Select your framework in the Vite CLI...');
+    execSync('npm create vite@latest', { cwd: projectDir, stdio: 'inherit', input: `\n` });
+    p.log.success('Frontend scaffolded.');
+  } catch (e) {
+    p.log.warn('Frontend scaffolding failed. Install manually if needed.');
   }
 }
 
@@ -182,37 +182,154 @@ async function generateEnvFiles(projectDir, answers) {
 
 async function generateReadme(projectDir, answers) {
   const runCommand = answers.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run';
+  const buildTool = answers.buildTool?.includes('maven') ? 'Maven' : (answers.buildTool?.includes('kotlin') ? 'Gradle Kotlin DSL' : 'Gradle Groovy DSL');
+  const language = answers.language || 'Java';
 
-  let depsList = '';
   const deps = answers.dependencies || [];
-  if (deps.length > 0) {
-    depsList = '\n## Dependencies\n' + deps.map(d => `- ${d}`).join('\n');
+
+  const depCategories = {
+    web: ['web', 'webflux', 'graphql', 'websocket', 'jersey', 'hateoas'],
+    data: ['data-jpa', 'jdbc', 'data-jdbc', 'mybatis', 'flyway', 'liquibase'],
+    db: ['h2', 'postgresql', 'mysql', 'mariadb', 'mssql', 'oracle', 'data-mongodb', 'data-redis', 'data-elasticsearch', 'data-cassandra', 'data-neo4j', 'data-couchbase'],
+    security: ['security', 'oauth2-client', 'oauth2-resource-server', 'oauth2-authorization-server'],
+    messaging: ['amqp', 'kafka', 'kafka-streams', 'activemq', 'artemis'],
+    devtools: ['devtools', 'lombok', 'docker-compose', 'spring-shell', 'configuration-processor'],
+    ops: ['actuator', 'prometheus', 'distributed-tracing', 'zipkin'],
+    io: ['batch', 'mail', 'quartz', 'cache', 'validation', 'retry'],
+    cloud: ['cloud-config-client', 'cloud-eureka', 'cloud-gateway', 'resilience4j', 'openfeign'],
+  };
+
+  const categoryNames = {
+    web: '🌐 Web',
+    data: '🗄️ Data Access',
+    db: '💾 Databases',
+    security: '🔐 Security',
+    messaging: '📨 Messaging',
+    devtools: '🛠️ Developer Tools',
+    ops: '📊 Operations',
+    io: '⚡ I/O',
+    cloud: '☁️ Cloud',
+  };
+
+  let depsByCategory = {};
+  for (const [cat, catDeps] of Object.entries(depCategories)) {
+    const matched = deps.filter(d => catDeps.includes(d));
+    if (matched.length > 0) {
+      depsByCategory[categoryNames[cat]] = matched;
+    }
   }
 
-  const hasDocker = answers.dependencies?.some(d => DB_DEPS.includes(d));
-  const dockerSection = hasDocker ? '\n## Local Services\n```bash\ndocker-compose up -d\n```' : '';
-  const envSection = (answers.dependencies?.some(d => ['postgresql', 'mysql', 'mariadb', 'data-jpa', 'jdbc', 'data-redis', 'security', 'mail', 'kafka', 'amqp'].includes(d))) ? '\n## Environment Variables\nCopy `.env.example` to `.env` and fill in your values.' : '';
-  const frontendSection = fs.existsSync(path.join(projectDir, 'frontend')) ? '\n## Frontend\n```bash\ncd frontend && npm install && npm run dev\n```' : '';
+  const hasDocker = deps.some(d => DB_DEPS.includes(d));
+  const hasFrontend = fs.existsSync(path.join(projectDir, 'frontend'));
+  const hasEnvVars = deps.some(d => ['postgresql', 'mysql', 'mariadb', 'h2', 'data-jpa', 'jdbc', 'data-redis', 'security', 'mail', 'kafka', 'amqp'].includes(d));
 
-  const content = `# ${answers.artifactId || 'spring-boot-app'}
-> ${answers.description || 'Demo project for Spring Boot'}
+  let depsSection = '';
+  if (Object.keys(depsByCategory).length > 0) {
+    depsSection = Object.entries(depsByCategory)
+      .map(([cat, catDeps]) => `| ${cat} | ${catDeps.join(', ')} |`)
+      .join('\n');
+    depsSection = `\n## 📦 Dependencies\n\n| Category | Dependencies |\n|---|---|\n${depsSection}`;
+  }
 
-## Tech Stack
-| | |
-|---|---|
-| Build Tool | ${answers.buildTool?.includes('maven') ? 'Maven' : 'Gradle'} |
-| Language | ${answers.language || 'Java'} |
-| Java Version | ${answers.javaVersion || '17'} |
-| Spring Boot | ${answers.springBootVersion || '3.5.0' }
-${depsList}
-## Prerequisites
-- Java ${answers.javaVersion || '17'}
-- ${answers.buildTool?.includes('maven') ? 'Maven' : 'Gradle'}
-## Getting Started
+  let dockerSection = '';
+  if (hasDocker) {
+    dockerSection = `
+## 🐳 Local Services
+
 \`\`\`bash
-cd ${answers.artifactId}
+docker-compose up -d
+\`\`\`
+
+Start local databases and services defined in \`docker-compose.yml\`.`;
+  }
+
+  let envSection = '';
+  if (hasEnvVars) {
+    envSection = `
+## 🔧 Environment Variables
+
+Copy \`.env.example\` to \`.env\` and configure:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+See [.env.example](.env.example) for all available variables.`;
+  }
+
+  let frontendSection = '';
+  if (hasFrontend) {
+    const frontendDeps = fs.readFileSync(path.join(projectDir, 'frontend', 'package.json'), 'utf-8');
+    let frontendType = 'Frontend';
+    try {
+      const pkg = JSON.parse(frontendDeps);
+      if (pkg.dependencies?.react) frontendType = 'React';
+      else if (pkg.dependencies?.vue) frontendType = 'Vue';
+      else if (pkg.dependencies?.svelte) frontendType = 'Svelte';
+      else if (pkg.dependencies?.['solid-js']) frontendType = 'SolidJS';
+      else if (pkg.dependencies?.['@angular/core']) frontendType = 'Angular';
+    } catch {}
+    frontendSection = `
+## ⚛️ ${frontendType} Frontend
+
+\`\`\`bash
+cd frontend
+npm install
+npm run dev
+\`\`\``;
+  }
+
+  const content = `# ${answers.artifactId}
+
+> ${answers.description || 'A Spring Boot application'}
+
+${depsSection}
+
+## 🏗️ Tech Stack
+
+| Component | Technology |
+|---|---|
+| **Framework** | Spring Boot ${answers.springBootVersion || '3.5.0'} |
+| **Language** | ${language} |
+| **Java Version** | ${answers.javaVersion || '17'} |
+| **Build Tool** | ${buildTool} |
+| **Packaging** | ${answers.packaging === 'war' ? 'War' : 'Jar'} |
+
+## 📋 Prerequisites
+
+- Java ${answers.javaVersion || '17'}
+- ${buildTool} (or use wrapper: \`./mvnw\` / \`./gradlew\`)
+${hasDocker ? '- Docker & Docker Compose' : ''}
+${hasFrontend ? '- Node.js 18+ (for frontend)' : ''}
+
+## 🚀 Getting Started
+
+\`\`\`bash
+# Build the project
+${answers.buildTool?.includes('maven') ? './mvnw clean package' : './gradlew build'}
+
+# Run the application
 ${runCommand}
-\`\`\`${dockerSection}${envSection}${frontendSection}
+\`\`\`
+
+${hasDocker}${envSection}${frontendSection}
+
+## 📁 Project Structure
+
+\`\`\`
+.
+├── src/main/java     # Java source code
+├── src/main/resources # Configuration files
+├── src/test         # Test files
+├── frontend/        # Frontend application${hasDocker ? '\n├── docker-compose.yml # Local services' : ''}
+└── pom.xml         # Maven configuration
+\`\`\`
+
+---
+
+<p align="center">
+  Built with ❤️ using <a href="https://github.com/yourrepo/create-spring-app">SpringCraft</a>
+</p>
 `;
 
   await fs.outputFile(path.join(projectDir, 'README.md'), content);
