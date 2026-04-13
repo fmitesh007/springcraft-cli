@@ -8,9 +8,16 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
     "fs-extra": "^11.2.0",
     "unzipper": "^0.10.14"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "pkg": "^5.8.1"
   }
 }
