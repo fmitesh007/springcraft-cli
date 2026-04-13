@@ -1,5 +1,6 @@
 import * as p from '@clack/prompts';
 import path from 'path';
+import fs from 'fs-extra';
 import { askQuestions } from './prompts.js';
 import { downloadProject } from './downloader.js';
 import { extract } from './extractor.js';
@@ -49,6 +50,7 @@ export async function run(flags = {}) {
   const targetPath = flags.targetPath;
 
   if (targetPath) {
+    fs.ensureDirSync(targetPath);
     process.chdir(targetPath);
     const dirName = path.basename(targetPath);
     if (!flags.artifactId) {
