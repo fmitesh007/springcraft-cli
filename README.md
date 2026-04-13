@@ -15,28 +15,29 @@
 - 📖 **Smart README** — Auto-generated project documentation
 - 🔧 **Presets** — Save and reuse your favorite configurations
 - 🏷️ **CLI Flags** — Full automation support for CI/CD pipelines
-- 🎨 **Frontend Scaffolding** — Add React, Vue, Svelte, SolidJS, or Angular in one step
+- 🎨 **Frontend Scaffolding** — Add React, Vue, or Angular in one step
 - 🗄️ **Git Initialization** — Automatic git setup with sensible defaults
+- 📁 **Path Support** — Create projects in any directory, auto-creates if needed
 
 ## Quick Start
 
 ### Interactive Mode
 
 ```bash
-npx springcraft my-spring-app
+springcraft .
 ```
 
-### Current Directory
+### Create in Specific Directory
 
 ```bash
-cd my-directory
-springcraft .
+springcraft ~/projects/my-api
+springcraft /path/to/any/directory
 ```
 
 ### Automated Mode
 
 ```bash
-springcraft my-app --maven --java --java-version 17 --boot 3.5.0 --deps web,data-jpa,lombok
+springcraft . --maven --java --java-version 17 --deps web,data-jpa,lombok
 ```
 
 ## Installation
@@ -50,10 +51,20 @@ npm install -g springcraft
 ### From source
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/fmitesh007/springcraft.git
 cd springcraft
 npm install
 npm link
+```
+
+### Add to PATH (if needed)
+
+```bash
+# Fish shell
+fish_add_path (npm config get prefix)/bin
+
+# Bash/Zsh
+export PATH="$PATH:$(npm config get prefix)/bin"
 ```
 
 ## Usage

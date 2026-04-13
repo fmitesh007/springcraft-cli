@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [Path-Based Scaffolding](#path-based-scaffolding)
 - [Interactive Mode](#interactive-mode)
 - [CLI Flags](#cli-flags)
 - [Presets](#presets)
@@ -11,27 +12,52 @@
 
 ---
 
-## Interactive Mode
+## Path-Based Scaffolding
 
-Run without any flags to use the interactive prompts:
-
-```bash
-springcraft my-spring-app
-```
+The core concept: specify a path, and the project is created there.
 
 ### Create in Current Directory
 
-Use `.` to scaffold a project in the current directory:
-
 ```bash
-cd my-directory
 springcraft .
 ```
 
-The directory name is used as the project name. Use `--artifact` to override:</p>
+Project files go into `./directory-name/`
+
+### Create in Specific Directory
 
 ```bash
-springcraft . --artifact my-custom-name
+springcraft ~/projects/my-api
+springcraft /path/to/any/directory
+springcraft ./relative/path
+```
+
+### Auto-Create Directories
+
+If the path doesn't exist, it's created automatically:
+
+```bash
+springcraft ~/projects/new-app
+# Creates ~/projects/ if needed
+# Creates ~/projects/new-app/ for the project
+```
+
+### Override Project Name
+
+Use `--artifact` to specify a different project name than the directory:
+
+```bash
+springcraft ~/projects/api --artifact my-api-service
+```
+
+---
+
+## Interactive Mode
+
+Run without CLI flags to use the interactive prompts:
+
+```bash
+springcraft .
 ```
 
 ### Prompt Flow
@@ -51,15 +77,13 @@ springcraft . --artifact my-custom-name
 
 6. **Group ID** — e.g., `com.example`
 
-7. **Artifact ID** — e.g., `my-spring-app`
+7. **Package Name** — Auto-derived from Group ID + Artifact ID
 
-8. **Package Name** — Auto-derived from Group ID + Artifact ID
+8. **Description** — Project description
 
-9. **Description** — Project description
+9. **Packaging** — Jar (recommended) or War
 
-10. **Packaging** — Jar (recommended) or War
-
-11. **Dependencies** — Based on mode selected in step 1
+10. **Dependencies** — Based on mode selected in step 1
 
 ---
 
@@ -69,9 +93,8 @@ All options can be passed via CLI flags for full automation:
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--help`, `-h` | Show help | `--help` |
-| `--version`, `-v` | Show version | `--version` |
 | `.` | Use current directory | `springcraft .` |
+| `/path` | Create in specific path | `springcraft ~/projects/api` |
 | `--maven` | Use Maven build tool | `--maven` |
 | `--gradle` | Use Gradle (Groovy DSL) | `--gradle` |
 | `--gradle-kotlin` | Use Gradle (Kotlin DSL) | `--gradle-kotlin` |
@@ -90,11 +113,13 @@ All options can be passed via CLI flags for full automation:
 | `--dry-run` | Show URL without downloading | `--dry-run` |
 | `--preset <name>` | Load saved preset | `--preset my-preset` |
 | `--list-presets` | List saved presets | `--list-presets` |
+| `--help`, `-h` | Show help | `--help` |
+| `--version`, `-v` | Show version | `--version` |
 
 ### Flag-Based Example
 
 ```bash
-springcraft my-api \
+springcraft . \
   --maven \
   --java \
   --java-version 21 \
@@ -125,24 +150,30 @@ Enter a name to save. Presets are stored at `~/.springcraft/presets.json`.
 ### Using a Preset
 
 ```bash
-springcraft new-api --preset my-api-preset
+springcraft . --preset fullstack
+```
+
+### List Available Presets
+
+```bash
+springcraft --list-presets
 ```
 
 ### Preset Format
 
 ```json
 {
-  "my-preset": {
+  "fullstack": {
     "buildTool": "maven-project",
     "language": "java",
-    "javaVersion": "21",
+    "javaVersion": "17",
     "springBootVersion": "3.5.0",
     "groupId": "com.example",
-    "artifactId": "demo",
-    "packageName": "com.example.demo",
-    "description": "Demo project",
+    "artifactId": "my-spring-app",
+    "packageName": "com.example.app",
+    "description": "Full stack Spring Boot application",
     "packaging": "jar",
-    "dependencies": ["web", "data-jpa", "lombok"]
+    "dependencies": ["web", "data-jpa", "security", "lombok"]
   }
 }
 ```
@@ -191,13 +222,9 @@ After project creation, you'll be offered:
 
 ### Frontend Scaffolding
 
-Add a frontend with Vite, Svelte, or Angular:
-- React (JavaScript)
-- React (TypeScript)
-- Vue
-- Svelte
-- SolidJS
-- Angular
+Add a frontend with Vite or Angular:
+- **Vite** — React, React+TS, Vue, Svelte, SolidJS
+- **Angular** — Full Angular CLI setup
 
 ### Docker Compose
 
@@ -246,39 +273,38 @@ Open project directly in:
 ### Minimal REST API
 
 ```bash
-springcraft rest-api --maven --java --java-version 17 --boot 3.5.0 --deps web,validation
+springcraft . --maven --java --java-version 17 --boot 3.5.0 --deps web,validation
 ```
 
 ### Full-Stack with PostgreSQL
 
 ```bash
-springcraft fullstack-app \
-  --gradle \
+springcraft ~/projects/api \
+  --maven \
   --java \
   --java-version 21 \
   --boot 3.5.0 \
   --group com.mycompany \
-  --artifact fullstack-app \
+  --artifact my-api \
   --deps web,data-jpa,security,lombok,postgresql,devtools,actuator
 ```
 
 ### Microservice
 
 ```bash
-springcraft user-service \
+springcraft ~/projects/user-service \
   --gradle-kotlin \
   --kotlin \
   --java-version 21 \
   --boot 3.5.0 \
   --group com.mycompany \
-  --artifact user-service \
   --deps webflux,data-redis,security,actuator,cloud-eureka
 ```
 
 ### React Full-Stack
 
 ```bash
-springcraft react-spring \
+springcraft ~/projects/react-spring \
   --maven \
   --java \
   --java-version 17 \
@@ -334,8 +360,8 @@ cat ~/.springcraft/presets.json
 
 ### TTY initialization failed
 
-This occurs when running in non-interactive environments (CI/CD, scripts). Use `--dry-run` to verify the URL, or pipe input:
+This occurs when running in non-interactive environments (CI/CD, scripts). Use `--dry-run` to verify the URL:
 
 ```bash
-echo -e "\n\n" | springcraft my-app
+springcraft . --dry-run
 ```
