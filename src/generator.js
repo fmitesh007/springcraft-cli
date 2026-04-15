@@ -78,6 +78,10 @@ export async function run(flags = {}) {
     answers = await askQuestions(flags);
   }
 
+  if (answers.arch === 'fullstack' && (!answers.dependencies || answers.dependencies.length === 0)) {
+    answers.dependencies = ['web'];
+  }
+
   const projectDir = targetPath
     ? path.resolve(targetPath, answers.artifactId)
     : path.resolve(process.cwd(), answers.artifactId);
