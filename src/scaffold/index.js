@@ -1,4 +1,5 @@
 import * as p from '@clack/prompts';
+import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs-extra';
 import { CONFIG } from '../shared/index.js';
@@ -9,6 +10,20 @@ import { generateDockerCompose } from './docker.js';
 import { generateEnvFiles } from './env.js';
 import { generateReadme } from './readme.js';
 import { initGit } from './git.js';
+
+async function ensureExecutablePermissions(projectDir) {
+  const isWindows = process.platform === 'win32';
+  if (isWindows) return;
+  
+  try {
+    const mvnwPath = path.join(projectDir, 'mvnw');
+    if (fs.existsSync(mvnwPath)) {
+      fs.chmodSync(mvnwPath, 0o755);
+    }
+  } catch (e) {
+    p.log.warn('Could not set mvnw permissions. Run: chmod +x mvnw');
+  }
+}
 
 export async function runPostScaffold(projectDir, answers) {
   let frontendResult = { scaffolded: false, stack: null };
@@ -34,6 +49,7 @@ export async function runPostScaffold(projectDir, answers) {
   await generateReadme(projectDir, answers);
   await initGit(projectDir, answers);
   await writeProjectConfig(projectDir, answers, frontendResult);
+  await ensureExecutablePermissions(projectDir);
 }
 
 async function askFrontendFramework() {
