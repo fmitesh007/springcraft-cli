@@ -1,54 +1,16 @@
 import * as p from '@clack/prompts';
 import path from 'path';
 import fs from 'fs-extra';
-import { askQuestions } from './prompts.js';
 import { downloadProject } from './downloader.js';
 import { extract } from './extractor.js';
-import { runPostScaffold } from './postscaffold.js';
-import { savePreset } from './presets.js';
-
-const SPRING_INITIALIZR_URL = 'https://start.spring.io/starter.zip';
-
-const REQUIRED_FIELDS = ['buildTool', 'language', 'javaVersion', 'springBootVersion', 'groupId', 'artifactId', 'packageName', 'description', 'packaging'];
-
-function hasAllRequired(flags) {
-  return REQUIRED_FIELDS.every(field => !!flags[field]);
-}
-
-function buildUrl(options) {
-  const {
-    buildTool,
-    language,
-    javaVersion,
-    springBootVersion,
-    groupId,
-    artifactId,
-    packageName,
-    description,
-    packaging,
-    dependencies,
-  } = options;
-
-  const params = new URLSearchParams({
-    type: buildTool,
-    language,
-    javaVersion,
-    bootVersion: springBootVersion,
-    groupId,
-    artifactId,
-    name: artifactId,
-    packageName,
-    description,
-    packaging,
-    dependencies: dependencies.join(','),
-  });
-
-  return `${SPRING_INITIALIZR_URL}?${params.toString()}`;
-}
+import { askProjectQuestions, askDependencies } from '../prompts/index.js';
+import { runPostScaffold } from '../scaffold/index.js';
+import { savePreset } from '../presets.js';
+import { CONFIG, getRunCommand, ensureProjectDir, inferPackageName, inferGroupId } from '../shared/index.js';
 
 export async function run(flags = {}) {
   const targetPath = flags.targetPath;
-
+  
   if (targetPath) {
     fs.ensureDirSync(targetPath);
     process.chdir(targetPath);
@@ -59,18 +21,18 @@ export async function run(flags = {}) {
   }
 
   if (!flags.packageName && flags.groupId && flags.artifactId) {
-    flags.packageName = `${flags.groupId}.${flags.artifactId}`;
+    flags.packageName = inferPackageName(flags.groupId, flags.artifactId);
   }
 
   const defaults = {
-    language: 'java',
-    springBootVersion: '3.5.0',
-    javaVersion: '17',
-    packaging: 'jar',
+    language: CONFIG.DEFAULTS.language,
+    springBootVersion: CONFIG.DEFAULTS.springBootVersion,
+    javaVersion: CONFIG.DEFAULTS.javaVersion,
+    packaging: CONFIG.DEFAULTS.packaging,
     description: flags.artifactId || 'Spring Boot project',
   };
 
-  const cliMode = flags.artifactId && flags.buildTool && flags.groupId && flags.packageName;
+  const cliMode = CONFIG.REQUIRED_CLI_FIELDS.every(field => !!flags[field]);
 
   let answers;
 
@@ -83,13 +45,15 @@ export async function run(flags = {}) {
     };
 
     if (flags.dryRun) {
-      const url = buildUrl(answers);
+      const { buildSpringInitializrUrl } = await import('../shared/config.js');
+      const url = buildSpringInitializrUrl(answers);
       console.log('  Dry run - would call:\n');
       console.log(`  ${url}\n`);
       return;
     }
   } else {
-    answers = await askQuestions(flags);
+    answers = await askProjectQuestions(flags);
+    answers.dependencies = await askDependencies(flags.dependencies);
   }
 
   if (answers.arch === 'fullstack' && (!answers.dependencies || answers.dependencies.length === 0)) {
@@ -124,7 +88,7 @@ export async function run(flags = {}) {
     p.log.success(`Preset "${presetName}" saved.`);
   }
 
-  const runCommand = answers.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run';
+  const runCommand = getRunCommand(answers.buildTool);
   const isFullstack = answers.arch === 'fullstack';
 
   const cdCommand = targetPath ? '' : `  cd ${answers.artifactId}\n`;
@@ -132,11 +96,11 @@ export async function run(flags = {}) {
   let portInfo = '';
   if (isFullstack) {
     portInfo = `\nPorts:
-  Backend:  http://localhost:8080
-  Frontend: http://localhost:5173`;
+  Backend:  http://localhost:${CONFIG.BACKEND_PORT}
+  Frontend: http://localhost:${CONFIG.FRONTEND_PORT}`;
   } else {
     portInfo = `\nPort:
-  Backend:  http://localhost:8080`;
+  Backend:  http://localhost:${CONFIG.BACKEND_PORT}`;
   }
 
   p.outro(`Project created successfully!${cdCommand}
