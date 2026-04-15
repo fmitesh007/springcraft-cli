@@ -14,8 +14,8 @@ export async function scaffoldFrontend(projectDir, framework, cliFlag) {
   const choice = cliFlag || framework;
 
   try {
-    p.log.step(`Running: npm create vite@latest frontend -- --template ${choice} --no-interactive`);
-    execSync(`npm create vite@latest frontend -- --template ${choice} --no-interactive`, {
+    p.log.step(`Running: npm create vite@latest frontend -- --template ${choice}`);
+    execSync(`npm create vite@latest frontend -- --template ${choice}`, {
       cwd: projectDir,
       stdio: 'inherit'
     });

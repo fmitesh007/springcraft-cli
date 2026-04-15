@@ -42,6 +42,7 @@ export async function run(flags = {}) {
     answers = {
       ...mergedFlags,
       dependencies: mergedFlags.dependencies || [],
+      _cliMode: true,
     };
 
     if (flags.dryRun) {
@@ -60,8 +61,9 @@ export async function run(flags = {}) {
     answers.dependencies = ['web'];
   }
 
+  // When targetPath is provided, project files are extracted directly there (no artifactId subdirectory)
   const projectDir = targetPath
-    ? path.resolve(targetPath, answers.artifactId)
+    ? path.resolve(targetPath)
     : path.resolve(process.cwd(), answers.artifactId);
 
   const spinner = p.spinner();
@@ -82,10 +84,12 @@ export async function run(flags = {}) {
 
   await runPostScaffold(projectDir, answers);
 
-  const presetName = await p.text({ message: 'Save as preset? (leave blank to skip)', placeholder: '' });
-  if (presetName && !p.isCancel(presetName) && presetName.trim() !== '') {
-    await savePreset(presetName.trim(), answers);
-    p.log.success(`Preset "${presetName}" saved.`);
+  if (!cliMode) {
+    const presetName = await p.text({ message: 'Save as preset? (leave blank to skip)', placeholder: '' });
+    if (presetName && !p.isCancel(presetName) && presetName.trim() !== '') {
+      await savePreset(presetName.trim(), answers);
+      p.log.success(`Preset "${presetName}" saved.`);
+    }
   }
 
   const runCommand = getRunCommand(answers.buildTool);

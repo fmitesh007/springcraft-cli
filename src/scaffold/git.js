@@ -4,12 +4,16 @@ import fs from 'fs-extra';
 import path from 'path';
 
 export async function initGit(projectDir, answers) {
-  const confirm = await p.confirm({
-    message: 'Initialize git repository?',
-    initialValue: true,
-  });
+  const cliMode = answers._cliMode;
+  
+  if (!cliMode) {
+    const confirm = await p.confirm({
+      message: 'Initialize git repository?',
+      initialValue: true,
+    });
 
-  if (!confirm) return;
+    if (!confirm) return;
+  }
 
   try {
     execSync('git init', { cwd: projectDir, stdio: 'pipe' });
