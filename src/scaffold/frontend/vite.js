@@ -8,8 +8,8 @@ import { configureViteProxy } from './proxy.js';
 
 async function tryScaffoldVite(projectDir, choice, env) {
   const commands = [
-    `npx create-vite@latest frontend --template ${choice} --skip-install`,
-    `npm create vite@latest frontend -- --template ${choice}`,
+    `npx create-vite@latest frontend --template ${choice} --no-interactive`,
+    `npm create vite@latest frontend -- --template ${choice} --no-interactive`,
   ];
   
   for (const cmd of commands) {
