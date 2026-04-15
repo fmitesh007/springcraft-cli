@@ -57,8 +57,10 @@ export async function run(flags = {}) {
     answers.dependencies = await askDependencies(flags.dependencies);
   }
 
-  if (answers.arch === 'fullstack' && (!answers.dependencies || answers.dependencies.length === 0)) {
-    answers.dependencies = ['web'];
+  if (!answers.dependencies || answers.dependencies.length === 0) {
+    answers.dependencies = ['web', 'devtools'];
+  } else if (!answers.dependencies.includes('devtools')) {
+    answers.dependencies.push('devtools');
   }
 
   // When targetPath is provided, project files are extracted directly there (no artifactId subdirectory)
