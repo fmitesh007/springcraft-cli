@@ -41,6 +41,8 @@ coverage/
 .temp/
 .tmp/
 .__*_tmp.zip
+tmp/
+/tmp/
 
 # Lock files (optional - uncomment if you want to track them)
 # package-lock.json
