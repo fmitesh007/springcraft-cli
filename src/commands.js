@@ -23,45 +23,31 @@ export function loadProjectConfig() {
 
 export function handleRun(flags) {
   const config = loadProjectConfig();
+  const frontendDir = config.frontendDir || 'frontend';
+  const hasFrontendDir = fs.existsSync(path.join(process.cwd(), frontendDir));
 
   if (flags.dev) {
-    if (!config.hasFrontend) {
-      p.log.error('No frontend found in this project. Scaffold with frontend first.');
+    if (!hasFrontendDir) {
+      p.log.error('No frontend found. Check if frontend/ folder exists.');
       process.exit(1);
     }
+
+    console.log('\n  Starting backend and frontend concurrently...\n');
 
     const backend = spawn(config.runCommand, [], {
       cwd: process.cwd(),
       shell: true,
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: 'inherit'
     });
 
     const frontend = spawn('npm', ['run', 'dev'], {
-      cwd: path.join(process.cwd(), config.frontendDir),
+      cwd: path.join(process.cwd(), frontendDir),
       shell: true,
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-
-    const reset = '\x1b[0m';
-    const cyan = '\x1b[36m';
-    const magenta = '\x1b[35m';
-
-    backend.stdout.on('data', (data) => {
-      process.stdout.write(`${cyan}[backend]${reset} ${data}`);
-    });
-    backend.stderr.on('data', (data) => {
-      process.stderr.write(`${cyan}[backend]${reset} ${data}`);
-    });
-
-    frontend.stdout.on('data', (data) => {
-      process.stdout.write(`${magenta}[frontend]${reset} ${data}`);
-    });
-    frontend.stderr.on('data', (data) => {
-      process.stderr.write(`${magenta}[frontend]${reset} ${data}`);
+      stdio: 'inherit'
     });
 
     const cleanup = () => {
-      p.log.step('Shutting down...');
+      console.log('\n\n  Shutting down...\n');
       if (backend.pid) process.kill(-backend.pid, 'SIGTERM');
       if (frontend.pid) process.kill(-frontend.pid, 'SIGTERM');
       process.exit(0);
@@ -70,22 +56,23 @@ export function handleRun(flags) {
     process.on('SIGINT', cleanup);
 
     backend.on('close', (code) => {
-      if (code !== 0) process.stderr.write(`Backend exited with code ${code}\n`);
+      if (code !== 0) console.error(`Backend exited with code ${code}`);
     });
 
     frontend.on('close', (code) => {
-      if (code !== 0) process.stderr.write(`Frontend exited with code ${code}\n`);
+      if (code !== 0) console.error(`Frontend exited with code ${code}`);
     });
 
   } else if (flags.frontend) {
-    if (!config.hasFrontend) {
-      p.log.error('No frontend found in this project.');
+    const frontendDir = config.frontendDir || 'frontend';
+    if (!hasFrontendDir) {
+      p.log.error('No frontend found. Check if frontend/ folder exists.');
       process.exit(1);
     }
 
     try {
       execSync('npm run dev', {
-        cwd: path.join(process.cwd(), config.frontendDir),
+        cwd: path.join(process.cwd(), frontendDir),
         stdio: 'inherit',
         shell: true
       });
@@ -109,15 +96,17 @@ export function handleRun(flags) {
 
 export async function handleBuild(flags) {
   const config = loadProjectConfig();
+  const frontendDir = config.frontendDir || 'frontend';
+  const hasFrontendDir = fs.existsSync(path.join(process.cwd(), frontendDir));
 
   if (flags.prod) {
     const spinner = p.spinner();
 
-    if (config.hasFrontend) {
+    if (hasFrontendDir) {
       spinner.start('Building frontend...');
       try {
         execSync('npm run build', {
-          cwd: path.join(process.cwd(), config.frontendDir),
+          cwd: path.join(process.cwd(), frontendDir),
           stdio: 'pipe',
           shell: true
         });
@@ -127,7 +116,7 @@ export async function handleBuild(flags) {
         const staticDir = path.join(process.cwd(), 'src/main/resources/static');
         await fs.empty(staticDir);
         await fs.copy(
-          path.join(process.cwd(), config.frontendDir, 'dist'),
+          path.join(process.cwd(), frontendDir, 'dist'),
           staticDir
         );
         spinner.stop('Copied to static resources.');

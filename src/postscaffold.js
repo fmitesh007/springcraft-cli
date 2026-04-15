@@ -480,18 +480,19 @@ export async function runPostScaffold(projectDir, answers) {
   await openInEditor(projectDir);
 
   const isGradle = answers.buildTool?.includes('gradle');
-  const isFullstack = answers.arch === 'fullstack' && frontendResult.scaffolded;
+  const frontendExists = fs.existsSync(path.join(projectDir, 'frontend'));
+  const hasFrontend = frontendExists || answers.arch === 'fullstack';
   const springcraftConfig = {
     name: answers.artifactId,
-    arch: isFullstack ? 'fullstack' : 'backend-only',
+    arch: hasFrontend ? 'fullstack' : 'backend-only',
     buildTool: answers.buildTool,
     language: answers.language,
     javaVersion: answers.javaVersion,
     springBootVersion: answers.springBootVersion,
     packageName: answers.packageName,
-    hasFrontend: frontendResult.scaffolded,
-    frontendDir: frontendResult.scaffolded ? 'frontend' : null,
-    frontendStack: frontendResult.stack,
+    hasFrontend: hasFrontend,
+    frontendDir: hasFrontend ? 'frontend' : null,
+    frontendStack: frontendResult.stack || (frontendExists ? 'Vite' : null),
     backendPort: 8080,
     frontendPort: 5173,
     runCommand: isGradle ? './gradlew bootRun' : './mvnw spring-boot:run',
