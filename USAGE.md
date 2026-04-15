@@ -261,9 +261,21 @@ After project creation, you'll be offered:
 
 ### Frontend Scaffolding
 
-Add a frontend with Vite or Angular:
-- **Vite** — React, React+TS, Vue, Svelte, SolidJS
+Add a frontend with Vite (all 7 frameworks supported):
+- **React** — With Hooks
+- **Vue** — With Composition API
+- **Svelte** — Reactive framework
 - **Angular** — Full Angular CLI setup
+- **Preact** — Lightweight React alternative
+- **Solid** — Fine-grained reactivity
+- **Lit** — Web Components
+
+Each frontend comes with a **Terminal UI Dashboard** featuring:
+- Identity resolver (API testing)
+- JSON response viewer with syntax highlighting
+- API endpoints display
+- Client routes panel
+- Health check indicator
 
 ### Docker Compose
 
@@ -348,10 +360,11 @@ springcraft ~/projects/react-spring \
   --java \
   --java-version 17 \
   --boot 3.5.0 \
-  --deps web,data-jpa,security,thymeleaf
+  --group com.mycompany \
+  --artifact react-spring \
+  --deps web,data-jpa,security \
+  --frontend react
 ```
-
-(Then select React frontend during post-scaffold prompts)
 
 ---
 
