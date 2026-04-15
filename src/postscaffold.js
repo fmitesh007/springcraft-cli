@@ -380,7 +380,17 @@ ${answers.buildTool?.includes('maven') ? './mvnw clean package' : './gradlew bui
 # Run the application
 ${runCommand}
 \`\`\`
+${hasFrontend ? `
+## 🔌 API Endpoints
 
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| \`/api/hello\` | GET | Hello world message |
+| \`/api/health\` | GET | Health check |
+\`\`\`bash
+curl http://localhost:8080/api/hello
+\`\`\`
+` : ''}
 ${hasDocker}${envSection}${frontendSection}
 
 ## 📁 Project Structure
@@ -471,8 +481,54 @@ async function openInEditor(projectDir) {
   }
 }
 
+async function addDefaultController(projectDir, packageName) {
+  const basePackage = packageName || 'com.example';
+  const packagePath = basePackage.replace(/\./g, '/');
+  const controllerDir = path.join(projectDir, 'src/main/java', packagePath);
+
+  await fs.ensureDir(controllerDir);
+
+  const controllerContent = `package ${basePackage};
+
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+public class ApiController {
+
+    @GetMapping("/hello")
+    public Map<String, Object> hello() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Hello from Spring Boot!");
+        response.put("status", "ok");
+        response.put("timestamp", System.currentTimeMillis());
+        return response;
+    }
+
+    @GetMapping("/health")
+    public Map<String, String> health() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "UP");
+        return response;
+    }
+}
+`;
+
+  await fs.writeFile(path.join(controllerDir, 'ApiController.java'), controllerContent);
+}
+
 export async function runPostScaffold(projectDir, answers) {
   const frontendResult = await askFrontend(projectDir, answers);
+  
+  const frontendExists = fs.existsSync(path.join(projectDir, 'frontend'));
+  const hasFrontend = frontendExists || answers.arch === 'fullstack';
+
+  if (hasFrontend) {
+    await addDefaultController(projectDir, answers.packageName);
+    p.log.success('Added default API controller at /api/hello');
+  }
+
   await generateDockerCompose(projectDir, answers);
   await generateEnvFiles(projectDir, answers);
   await generateReadme(projectDir, answers);
@@ -480,8 +536,6 @@ export async function runPostScaffold(projectDir, answers) {
   await openInEditor(projectDir);
 
   const isGradle = answers.buildTool?.includes('gradle');
-  const frontendExists = fs.existsSync(path.join(projectDir, 'frontend'));
-  const hasFrontend = frontendExists || answers.arch === 'fullstack';
   const springcraftConfig = {
     name: answers.artifactId,
     arch: hasFrontend ? 'fullstack' : 'backend-only',
