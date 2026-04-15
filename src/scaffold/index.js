@@ -60,16 +60,15 @@ async function askFrontendFramework() {
       { value: 'vue', label: 'Vue' },
       { value: 'svelte', label: 'Svelte' },
       { value: 'angular', label: 'Angular' },
+      { value: 'preact', label: 'Preact' },
+      { value: 'solid', label: 'Solid' },
+      { value: 'lit', label: 'Lit' },
       { value: 'none', label: 'None' },
     ],
   });
 
   if (p.isCancel(choice) || choice === 'none') {
     return null;
-  }
-
-  if (choice === 'angular') {
-    return 'angular';
   }
 
   return choice;

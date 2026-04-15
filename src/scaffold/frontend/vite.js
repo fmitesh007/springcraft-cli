@@ -81,27 +81,15 @@ export async function askFrontendFramework(projectDir) {
       { value: 'vue', label: 'Vue' },
       { value: 'svelte', label: 'Svelte' },
       { value: 'angular', label: 'Angular' },
+      { value: 'preact', label: 'Preact' },
+      { value: 'solid', label: 'Solid' },
+      { value: 'lit', label: 'Lit' },
       { value: 'none', label: 'None' },
     ],
   });
 
   if (p.isCancel(choice) || choice === 'none') {
     return null;
-  }
-
-  if (choice === 'angular') {
-    try {
-      p.log.step('Running: npx @angular/cli new frontend');
-      execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', {
-        cwd: projectDir,
-        stdio: 'inherit'
-      });
-      p.log.success('Angular frontend scaffolded.');
-      return 'angular';
-    } catch (e) {
-      p.log.warn('Angular scaffolding failed. Install manually if needed.');
-      return null;
-    }
   }
 
   return choice;
