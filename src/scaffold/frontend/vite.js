@@ -15,9 +15,12 @@ export async function scaffoldFrontend(projectDir, framework, cliFlag) {
 
   try {
     p.log.step(`Running: npm create vite@latest frontend -- --template ${choice}`);
-    execSync(`echo "n" | npm create vite@latest frontend -- --template ${choice}`, {
+    
+    const env = { ...process.env, CI: 'true' };
+    execSync(`npm create vite@latest frontend -- --template ${choice}`, {
       cwd: projectDir,
-      stdio: 'inherit'
+      stdio: 'inherit',
+      env
     });
     
     const stackName = choice.charAt(0).toUpperCase() + choice.slice(1);
