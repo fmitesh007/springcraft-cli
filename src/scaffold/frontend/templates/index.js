@@ -2,23 +2,7 @@ import * as p from '@clack/prompts';
 import fs from 'fs-extra';
 import path from 'path';
 import { detectFrontendStack } from '../../../shared/index.js';
-import { generateReactHelloUI } from './react.js';
-import { generateVueHelloUI } from './vue.js';
-import { generateSvelteHelloUI } from './svelte.js';
-import { generateAngularHelloUI } from './angular.js';
-import { generatePreactHelloUI } from './preact.js';
-import { generateSolidHelloUI } from './solid.js';
-import { generateLitHelloUI } from './lit.js';
-
-const generators = {
-  react: generateReactHelloUI,
-  vue: generateVueHelloUI,
-  svelte: generateSvelteHelloUI,
-  angular: generateAngularHelloUI,
-  preact: generatePreactHelloUI,
-  solid: generateSolidHelloUI,
-  lit: generateLitHelloUI,
-};
+import { generateUnifiedHelloUI } from './unified.js';
 
 export async function generateHelloUI(projectDir) {
   const pkgPath = path.join(projectDir, 'frontend', 'package.json');
@@ -28,24 +12,13 @@ export async function generateHelloUI(projectDir) {
     return false;
   }
 
-  const stack = detectFrontendStack(projectDir);
+  const stack = detectFrontendStack(projectDir) || 'Unknown';
   
-  if (!stack) {
-    p.log.warn('Unknown frontend stack, skipping Hello UI generation.');
-    return false;
-  }
-
-  const generatorKey = stack.toLowerCase();
-  const generator = generators[generatorKey];
-  
-  if (!generator) {
-    p.log.warn(`Hello UI not available for ${stack}, skipping.`);
-    return false;
-  }
-
   try {
-    await generator(projectDir);
-    p.log.success(`Generated ${stack} Hello UI (replaced default template)`);
+    const html = generateUnifiedHelloUI(projectDir, stack);
+    const indexPath = path.join(projectDir, 'frontend', 'index.html');
+    await fs.writeFile(indexPath, html);
+    p.log.success(`Generated SpringCraft terminal UI`);
     return true;
   } catch (e) {
     p.log.warn(`Failed to generate Hello UI: ${e.message}`);
@@ -54,5 +27,5 @@ export async function generateHelloUI(projectDir) {
 }
 
 export function getAvailableTemplates() {
-  return Object.keys(generators);
+  return ['react', 'vue', 'svelte', 'angular', 'preact', 'solid', 'lit'];
 }
