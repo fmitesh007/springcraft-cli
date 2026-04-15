@@ -1,8 +1,32 @@
 import { API_ROUTES, FRONTEND_ROUTES } from '../../../shared/index.js';
 
-export function generateUnifiedHelloUI(projectDir, framework) {
+const LOGO_HTML = `<div class="relative group">
+  <div class="absolute inset-0 bg-primary blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
+  <div class="relative w-14 h-14 rounded-2xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+    <div class="relative flex flex-col items-center gap-0.5 animate-coil">
+      <div class="w-6 h-1 rounded-full bg-primary/20 border border-primary/40 shadow-[0_0_8px_rgba(180,190,254,0.3)]"></div>
+      <div class="w-8 h-1.5 rounded-full bg-primary/40 border border-primary/60 shadow-[0_0_10px_rgba(180,190,254,0.4)]"></div>
+      <div class="w-10 h-2 rounded-full bg-primary border border-primary/80 shadow-[0_0_12px_rgba(180,190,254,0.5)]"></div>
+      <div class="w-8 h-1.5 rounded-full bg-primary/40 border border-primary/60 shadow-[0_0_10px_rgba(180,190,254,0.4)]"></div>
+      <div class="w-6 h-1 rounded-full bg-primary/20 border border-primary/40 shadow-[0_0_8px_rgba(180,190,254,0.3)]"></div>
+    </div>
+    <div class="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-emerald-400"></div>
+  </div>
+</div>`;
+
+const FIGLET_TEXT = `  ____  ____  ____  ___  _   _  ____  ____  ____   _   _____  _____ 
+ / ___||  _ \\|  _ \\|_ _|| \\ | |/ ___|/ ___||  _ \\ / \\ |  ___||_   _|
+ \\___ \\| |_) | |_) || | |  \\| | |  _| |    | |_) / _ \\| |_     | |  
+  ___) |  __/|  _ < | | | |\\  | |_| | |___ |  _ / ___ \\  _|    | |  
+ |____/|_|   |_| \\_\\___||_| \\_|\\____|\\____||_| \\_/   \\_|_|      |_|  `;
+
+export function generateUnifiedHelloUI(projectDir) {
   const routesJson = JSON.stringify(API_ROUTES);
   const frontendRoutesJson = JSON.stringify(FRONTEND_ROUTES);
+
+  const escapedLogo = LOGO_HTML.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+  const escapedFiglet = FIGLET_TEXT.replace(/\\/g, '\\\\');
 
   const htmlTemplate = `<!DOCTYPE html>
 <html lang="en">
@@ -64,119 +88,91 @@ export function generateUnifiedHelloUI(projectDir, framework) {
   </style>
 </head>
 <body class="bg-surface text-on-surface font-body min-h-screen">
-  <main class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
-    <section class="max-w-[1200px] w-full mx-auto">
+  <main class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8">
+    <section class="max-w-[1000px] w-full mx-auto">
       
-      <!-- Logo & Hero Header -->
-      <div class="mb-12 flex flex-col items-center text-center gap-6">
+      <div class="mb-8 sm:mb-10 flex flex-col items-center text-center gap-4 sm:gap-6">
         <div class="flex flex-col items-center">
-          <div class="relative group mb-6">
-            <div class="absolute inset-0 bg-primary blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
-            <div class="relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shadow-2xl overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-              <div class="relative flex flex-col items-center gap-0.5 animate-coil">
-                <div class="w-8 sm:w-12 h-1.5 sm:h-2 rounded-full bg-primary/20 border border-primary/40 shadow-[0_0_10px_rgba(180,190,254,0.3)]"></div>
-                <div class="w-10 sm:w-14 h-2 sm:h-2.5 rounded-full bg-primary/40 border border-primary/60 shadow-[0_0_12px_rgba(180,190,254,0.4)]"></div>
-                <div class="w-12 sm:w-16 h-2.5 sm:h-3 rounded-full bg-primary border border-primary/80 shadow-[0_0_15px_rgba(180,190,254,0.5)]"></div>
-                <div class="w-10 sm:w-14 h-2 sm:h-2.5 rounded-full bg-primary/40 border border-primary/60 shadow-[0_0_12px_rgba(180,190,254,0.4)]"></div>
-                <div class="w-8 sm:w-12 h-1.5 sm:h-2 rounded-full bg-primary/20 border border-primary/40 shadow-[0_0_10px_rgba(180,190,254,0.3)]"></div>
-              </div>
-              <div class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-            </div>
-          </div>
-          <pre class="ascii-logo font-mono text-[7px] sm:text-[10px] md:text-[12px] lg:text-[14px] font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary select-none pointer-events-none whitespace-pre">  ____  ____  ____  ___  _   _  ____  ____  ____   _   _____  _____ 
- / ___||  _ \\|  _ \\|_ _|| \\ | |/ ___|/ ___||  _ \\ / \\ |  ___||_   _|
- \\___ \\| |_) | |_) || | |  \\| | |  _| |    | |_) / _ \\| |_     | |  
-  ___) |  __/|  _ < | | | |\\  | |_| | |___ |  _ / ___ \\  _|    | |  
- |____/|_|   |_| \\_\\___||_| \\_|\\____|\\____||_| \\_/   \\_|_|      |_|  </pre>
-          <p class="text-on-surface-variant text-sm sm:text-lg mt-4 font-mono tracking-wide uppercase text-[10px] sm:text-xs">Crafting your Spring ecosystem with precision</p>
+          <div id="logoContainer" class="mb-4"></div>
+          <pre id="figletText" class="ascii-logo font-mono text-[6px] sm:text-[8px] md:text-[10px] lg:text-[12px] font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary select-none pointer-events-none whitespace-pre"></pre>
+          <p class="text-on-surface-variant text-xs sm:text-sm mt-3 font-mono tracking-wide uppercase text-[9px] sm:text-[10px]">Crafting your Spring ecosystem with precision</p>
         </div>
-        <div class="flex gap-4">
-          <div class="px-4 sm:px-6 py-2 bg-surface-container-low rounded-full border border-outline-variant/20 flex items-center gap-4">
-            <span class="text-[10px] sm:text-xs font-mono text-secondary uppercase tracking-[0.2em]">Engine Status</span>
-            <span class="text-xs sm:text-sm font-semibold text-emerald-400 flex items-center gap-2">
-              <span class="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
-              Nominal
+        <div class="flex gap-3 sm:gap-4">
+          <div class="px-3 sm:px-5 py-1.5 sm:py-2 bg-surface-container-low rounded-full border border-outline-variant/20 flex items-center gap-3 sm:gap-4">
+            <span class="text-[9px] sm:text-[10px] font-mono text-secondary uppercase tracking-[0.15em]">Engine Status</span>
+            <span id="engineStatus" class="text-[10px] sm:text-xs font-semibold text-emerald-400 flex items-center gap-1.5 sm:gap-2">
+              <span class="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_6px_#34d399]"></span>
+              <span class="status-text">Checking...</span>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Bento Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5 mb-8 sm:mb-10">
         
-        <!-- Grid Cell 1: Identity Resolver -->
-        <div class="glass-panel p-6 sm:p-8 rounded-xl border border-outline-variant/10 flex flex-col justify-between min-h-[280px] sm:min-h-[340px]">
+        <div class="glass-panel p-5 sm:p-6 rounded-xl border border-outline-variant/10 flex flex-col justify-between min-h-[220px] sm:min-h-[260px]">
           <div>
-            <div class="flex items-center gap-2 mb-4 sm:mb-6">
-              <span class="material-symbols-outlined text-secondary text-lg sm:text-xl">bolt</span>
-              <h3 class="font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#9399b2]">Identity Resolver</h3>
+            <div class="flex items-center gap-2 mb-3 sm:mb-4">
+              <span class="material-symbols-outlined text-secondary text-base sm:text-lg">bolt</span>
+              <h3 class="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#9399b2]">Identity Resolver</h3>
             </div>
-            <p class="text-lg sm:text-2xl font-light text-white mb-4 sm:mb-8">What's your handle in the <span class="text-primary italic">SpringCraft</span> cloud?</p>
+            <p class="text-base sm:text-xl font-light text-white mb-3 sm:mb-5">What's your handle in the <span class="text-primary italic">SpringCraft</span> cloud?</p>
             <div class="relative group">
-              <input id="nameInput" class="w-full bg-transparent border-b border-outline-variant/30 py-3 sm:py-4 text-base sm:text-xl font-mono font-light focus:outline-none focus:border-primary transition-colors placeholder:text-outline-variant/50" placeholder="guest@springcraft:~$" type="text"/>
-              <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-primary transition-all duration-500 group-focus-within:w-full shadow-[0_0_10px_#bac3ff]"></div>
+              <input id="nameInput" class="w-full bg-transparent border-b border-outline-variant/30 py-2 sm:py-3 text-sm sm:text-lg font-mono font-light focus:outline-none focus:border-primary transition-colors placeholder:text-outline-variant/50" placeholder="guest@springcraft:~$" type="text"/>
+              <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-primary transition-all duration-500 group-focus-within:w-full shadow-[0_0_8px_#bac3ff]"></div>
             </div>
           </div>
-          <div class="flex justify-end mt-6 sm:mt-8">
-            <button id="executeBtn" class="bg-primary-container text-on-primary-container px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] sm:text-xs hover:shadow-[0_0_25px_rgba(180,190,254,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 font-mono">
+          <div class="flex justify-end mt-4 sm:mt-5">
+            <button id="executeBtn" class="bg-primary-container text-on-primary-container px-5 sm:px-7 py-2.5 sm:py-3 rounded-lg font-bold uppercase tracking-widest text-[9px] sm:text-[10px] hover:shadow-[0_0_20px_rgba(180,190,254,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 font-mono">
               Execute
             </button>
           </div>
         </div>
 
-        <!-- Grid Cell 2: JSON Response -->
-        <div class="bg-surface-container-lowest p-0 rounded-xl border border-outline-variant/10 overflow-hidden flex flex-col min-h-[280px] sm:min-h-[340px]">
-          <div class="bg-surface-container-high px-4 sm:px-6 py-2 sm:py-3 border-b border-outline-variant/10 flex items-center justify-between">
+        <div class="bg-surface-container-lowest p-0 rounded-xl border border-outline-variant/10 overflow-hidden flex flex-col min-h-[220px] sm:min-h-[260px]">
+          <div class="bg-surface-container-high px-3 sm:px-5 py-2 border-b border-outline-variant/10 flex items-center justify-between">
             <div class="flex gap-1.5">
-              <div class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-500/30"></div>
-              <div class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-500/30"></div>
-              <div class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500/30"></div>
+              <div class="w-2 h-2 rounded-full bg-red-500/30"></div>
+              <div class="w-2 h-2 rounded-full bg-amber-500/30"></div>
+              <div class="w-2 h-2 rounded-full bg-emerald-500/30"></div>
             </div>
-            <span class="font-mono text-[10px] sm:text-xs text-outline uppercase tracking-widest">response.json</span>
+            <span class="font-mono text-[9px] sm:text-[10px] text-outline uppercase tracking-widest">response.json</span>
             <button id="copyBtn" class="material-symbols-outlined text-sm text-outline cursor-pointer hover:text-white transition-colors">content_copy</button>
           </div>
-          <div class="p-4 sm:p-6 font-mono text-[11px] sm:text-[13px] leading-relaxed custom-scrollbar overflow-auto flex-1">
+          <div class="p-3 sm:p-5 font-mono text-[10px] sm:text-[12px] leading-relaxed custom-scrollbar overflow-auto flex-1">
             <pre id="responseArea" class="text-[#cdd6f4]"><span class="text-on-surface-variant italic">Response will appear here after executing...</span></pre>
           </div>
         </div>
 
-        <!-- Grid Cell 3: API Endpoints -->
-        <div class="bg-surface-container p-6 sm:p-8 rounded-xl border border-outline-variant/10 flex flex-col min-h-[280px] sm:min-h-[340px]">
-          <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <div class="bg-surface-container p-5 sm:p-6 rounded-xl border border-outline-variant/10 flex flex-col min-h-[220px] sm:min-h-[260px]">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
             <div class="flex items-center gap-2 sm:gap-3">
-              <span class="material-symbols-outlined text-secondary-container text-lg sm:text-xl">dns</span>
-              <h3 class="font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#9399b2]">API Endpoints</h3>
+              <span class="material-symbols-outlined text-secondary-container text-base sm:text-lg">dns</span>
+              <h3 class="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#9399b2]">API Endpoints</h3>
             </div>
-            <span class="text-[9px] sm:text-[10px] font-mono bg-secondary-container/20 text-secondary px-2 py-0.5 rounded border border-secondary-container/30 uppercase tracking-tighter">V1.0</span>
+            <span class="text-[8px] sm:text-[9px] font-mono bg-secondary-container/20 text-secondary px-1.5 sm:px-2 py-0.5 rounded border border-secondary-container/30 uppercase tracking-tighter">V1.0</span>
           </div>
-          <div id="apiEndpoints" class="space-y-2 sm:space-y-3 flex-1 overflow-auto">
-            <!-- Routes injected via JS -->
-          </div>
+          <div id="apiEndpoints" class="space-y-2 flex-1 overflow-auto"></div>
         </div>
 
-        <!-- Grid Cell 4: Client Routes -->
-        <div class="bg-surface-container p-6 sm:p-8 rounded-xl border border-outline-variant/10 flex flex-col min-h-[280px] sm:min-h-[340px]">
-          <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <div class="bg-surface-container p-5 sm:p-6 rounded-xl border border-outline-variant/10 flex flex-col min-h-[220px] sm:min-h-[260px]">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
             <div class="flex items-center gap-2 sm:gap-3">
-              <span class="material-symbols-outlined text-primary text-lg sm:text-xl">web</span>
-              <h3 class="font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#9399b2]">Client Routes</h3>
+              <span class="material-symbols-outlined text-primary text-base sm:text-lg">web</span>
+              <h3 class="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#9399b2]">Client Routes</h3>
             </div>
             <div class="flex items-center gap-2">
-              <span class="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(126,209,246,0.6)]"></span>
-              <span class="font-mono text-[9px] sm:text-[10px] text-secondary uppercase tracking-widest">Live</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_6px_rgba(126,209,246,0.6)]"></span>
+              <span class="font-mono text-[8px] sm:text-[9px] text-secondary uppercase tracking-widest">Live</span>
             </div>
           </div>
-          <div id="clientRoutes" class="space-y-2 sm:space-y-3 flex-1 overflow-auto">
-            <!-- Routes injected via JS -->
-          </div>
+          <div id="clientRoutes" class="space-y-2 flex-1 overflow-auto"></div>
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="text-center py-8 sm:py-12 border-t border-outline-variant/10">
-        <p class="font-mono text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-on-surface-variant/60 flex items-center justify-center gap-2">
-          crafted via <a href="https://github.com/fmitesh/springcraft" target="_blank" class="text-primary hover:underline mx-1">springcraft</a> with <span class="text-red-500 text-sm animate-pulse">♥</span>
+      <div class="text-center py-6 sm:py-8 border-t border-outline-variant/10">
+        <p class="font-mono text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/60 flex items-center justify-center gap-2">
+          crafted via <a href="https://github.com/fmitesh/springcraft" target="_blank" class="text-primary hover:underline mx-1">springcraft</a> with <span class="text-red-500 text-xs sm:text-sm animate-pulse">&#9829;</span>
         </p>
       </div>
     </section>
@@ -186,10 +182,13 @@ export function generateUnifiedHelloUI(projectDir, framework) {
     const API_ROUTES = ${routesJson};
     const FRONTEND_ROUTES = ${frontendRoutesJson};
 
+    document.getElementById('logoContainer').innerHTML = \`${escapedLogo}\`;
+    document.getElementById('figletText').textContent = \`${escapedFiglet}\`;
+
     function syntaxHighlight(json) {
       if (!json) return '';
       const str = typeof json === 'string' ? json : JSON.stringify(json, null, 2);
-      return str.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      return str.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\\b(true|false|null)\\b|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?)/g, function (match) {
         let cls = 'json-number';
         if (/^"/.test(match)) {
           cls = /:$/.test(match) ? 'json-key' : 'json-string';
@@ -213,29 +212,52 @@ export function generateUnifiedHelloUI(projectDir, framework) {
       return colors[method.toUpperCase()] || colors['GET'];
     }
 
+    function updateEngineStatus(status, color) {
+      const statusEl = document.getElementById('engineStatus');
+      const dot = statusEl.querySelector('span:first-child');
+      const text = statusEl.querySelector('.status-text');
+      dot.style.backgroundColor = color;
+      dot.style.boxShadow = '0 0 6px ' + color;
+      text.textContent = status;
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          const data = await res.json();
+          updateEngineStatus(data.status || 'Running', '#34d399');
+        } else {
+          updateEngineStatus('Error', '#ef4444');
+        }
+      } catch (err) {
+        updateEngineStatus('Offline', '#ef4444');
+      }
+    }
+
     function renderRoutes() {
       const apiContainer = document.getElementById('apiEndpoints');
       const clientContainer = document.getElementById('clientRoutes');
 
-      apiContainer.innerHTML = API_ROUTES.map(route => \`
-        <div class="group flex items-center justify-between p-2 sm:p-3 rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer border border-transparent hover:border-outline-variant/10">
-          <div class="flex items-center gap-3 sm:gap-4">
-            <span class="w-10 sm:w-12 text-[9px] sm:text-[10px] font-bold text-center py-1 rounded border \${getMethodColor(route.method)}">\${route.method}</span>
-            <span class="font-mono text-xs sm:text-sm text-[#cdd6f4]">\${route.path}\${route.query || ''}</span>
-          </div>
-          <span class="material-symbols-outlined text-sm sm:text-lg opacity-0 group-hover:opacity-100 text-outline transition-all">chevron_right</span>
-        </div>
-      \`).join('');
+      apiContainer.innerHTML = API_ROUTES.map(function(route) {
+        return '<div class="group flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer border border-transparent hover:border-outline-variant/10">' +
+          '<div class="flex items-center gap-3">' +
+            '<span class="w-10 sm:w-12 text-[8px] sm:text-[9px] font-bold text-center py-1 rounded border ' + getMethodColor(route.method) + '">' + route.method + '</span>' +
+            '<span class="font-mono text-[10px] sm:text-xs text-[#cdd6f4]">' + route.path + (route.query || '') + '</span>' +
+          '</div>' +
+          '<span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 text-outline transition-all">chevron_right</span>' +
+        '</div>';
+      }).join('');
 
-      clientContainer.innerHTML = FRONTEND_ROUTES.map(route => \`
-        <div class="group flex items-center justify-between p-2 sm:p-3 rounded-lg bg-surface-container-low/50 hover:bg-surface-container-high transition-all cursor-pointer border border-outline-variant/5">
-          <div class="flex items-center gap-3 sm:gap-4">
-            <span class="w-10 sm:w-12 text-[9px] sm:text-[10px] font-bold text-center py-1 rounded border \${getMethodColor(route.method)}">\${route.method}</span>
-            <span class="font-mono text-xs sm:text-sm text-[#cdd6f4]">\${route.path}</span>
-          </div>
-          <div class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-surface-container-highest"></div>
-        </div>
-      \`).join('');
+      clientContainer.innerHTML = FRONTEND_ROUTES.map(function(route) {
+        return '<div class="group flex items-center justify-between p-2 rounded-lg bg-surface-container-low/50 hover:bg-surface-container-high transition-all cursor-pointer border border-outline-variant/5">' +
+          '<div class="flex items-center gap-3">' +
+            '<span class="w-10 sm:w-12 text-[8px] sm:text-[9px] font-bold text-center py-1 rounded border ' + getMethodColor(route.method) + '">' + route.method + '</span>' +
+            '<span class="font-mono text-[10px] sm:text-xs text-[#cdd6f4]">' + route.path + '</span>' +
+          '</div>' +
+          '<div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>' +
+        '</div>';
+      }).join('');
     }
 
     async function handleExecute() {
@@ -250,11 +272,21 @@ export function generateUnifiedHelloUI(projectDir, framework) {
       responseArea.innerHTML = '<span class="text-secondary animate-pulse">Connecting to Spring Boot...</span>';
 
       try {
-        const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name)}\`);
+        const res = await fetch('/api/hello?name=' + encodeURIComponent(name));
         const data = await res.json();
-        responseArea.innerHTML = syntaxHighlight(data);
+        
+        const enrichedResponse = {
+          ...data,
+          _meta: {
+            server: 'running',
+            errors: 0,
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        responseArea.innerHTML = syntaxHighlight(enrichedResponse);
       } catch (err) {
-        responseArea.innerHTML = \`<span class="text-red-400">Error: \${err.message}</span>\n<span class="text-on-surface-variant text-xs">Make sure the backend is running on port 8080</span>\`;
+        responseArea.innerHTML = '<span class="text-red-400">Error: ' + err.message + '</span><br><span class="text-on-surface-variant text-[10px]">Make sure the backend is running on port 8080</span>';
       }
     }
 
@@ -264,12 +296,13 @@ export function generateUnifiedHelloUI(projectDir, framework) {
     }
 
     document.getElementById('executeBtn').addEventListener('click', handleExecute);
-    document.getElementById('nameInput').addEventListener('keydown', (e) => {
+    document.getElementById('nameInput').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') handleExecute();
     });
     document.getElementById('copyBtn').addEventListener('click', copyResponse);
 
     renderRoutes();
+    checkHealth();
   </script>
 </html>`;
 
