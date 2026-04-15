@@ -3,11 +3,11 @@ import path from 'path';
 import { HELLO_UI_STYLES, API_ROUTES } from '../../../shared/index.js';
 
 export async function generateReactHelloUI(projectDir) {
-  const routes = API_ROUTES.map(r => ({
+  const routesJson = JSON.stringify(API_ROUTES.map(r => ({
     method: r.method,
     path: r.path,
     query: r.query || null,
-  }));
+  })));
 
   const appJsx = `import { useState } from 'react';
 
@@ -18,6 +18,8 @@ function formatJson(json) {
     .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
     .replace(/: (\\\\d+)/g, ': <span class="json-number">$1</span>');
 }
+
+const routes = ${routesJson};
 
 function App() {
   const [name, setName] = useState('');
