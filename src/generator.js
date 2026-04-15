@@ -62,11 +62,25 @@ export async function run(flags = {}) {
     flags.packageName = `${flags.groupId}.${flags.artifactId}`;
   }
 
+  const defaults = {
+    language: 'java',
+    springBootVersion: '3.5.0',
+    javaVersion: '17',
+    packaging: 'jar',
+    description: flags.artifactId || 'Spring Boot project',
+  };
+
+  const cliMode = flags.artifactId && flags.buildTool && flags.groupId && flags.packageName;
+
   let answers;
 
-  if (hasAllRequired(flags) && flags.dependencies !== undefined) {
+  if (cliMode) {
+    const mergedFlags = { ...defaults, ...flags };
     console.log('\n  Using CLI flags - skipping prompts.\n');
-    answers = { ...flags, dependencies: flags.dependencies || [] };
+    answers = {
+      ...mergedFlags,
+      dependencies: mergedFlags.dependencies || [],
+    };
 
     if (flags.dryRun) {
       const url = buildUrl(answers);

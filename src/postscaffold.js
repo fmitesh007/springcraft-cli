@@ -43,14 +43,16 @@ async function askFrontend(projectDir, answers) {
     return { scaffolded: false, stack: null };
   }
 
-  const choice = await p.select({
+  const choice = answers.frontend || (await p.select({
     message: 'Add a frontend?',
     options: [
-      { value: 'vite', label: 'Yes (Vite)' },
+      { value: 'react', label: 'React' },
+      { value: 'vue', label: 'Vue' },
+      { value: 'svelte', label: 'Svelte' },
       { value: 'angular', label: 'Angular' },
       { value: 'none', label: 'None' },
     ],
-  });
+  }));
 
   if (p.isCancel(choice) || choice === 'none') {
     return { scaffolded: false, stack: null };
@@ -58,7 +60,7 @@ async function askFrontend(projectDir, answers) {
 
   if (choice === 'angular') {
     try {
-      p.log.step('Running: npx @angular.cli new frontend');
+      p.log.step('Running: npx @angular/cli new frontend');
       execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', { cwd: projectDir, stdio: 'inherit' });
       p.log.success('Angular frontend scaffolded.');
       return { scaffolded: true, stack: 'Angular' };
@@ -68,14 +70,32 @@ async function askFrontend(projectDir, answers) {
     }
   }
 
+  // Map our choice to Vite template name
+  const templateMap = {
+    react: 'react',
+    vue: 'vue',
+    svelte: 'svelte',
+    lit: 'lit',
+    preact: 'preact',
+    solid: 'solid',
+  };
+
+  const template = templateMap[choice];
+  const stackName = choice.charAt(0).toUpperCase() + choice.slice(1);
+
   try {
-    p.log.step('Running: npm create vite@latest');
-    p.log.info('Select your framework in the Vite CLI...');
-    execSync('npm create vite@latest', { cwd: projectDir, stdio: 'inherit', input: `\n` });
-    p.log.success('Frontend scaffolded.');
+    p.log.step(`Running: npm create vite@latest frontend -- --template ${template} --no-interactive`);
+    execSync(`npm create vite@latest frontend -- --template ${template} --no-interactive`, { cwd: projectDir, stdio: 'inherit' });
+    p.log.success(`${stackName} frontend scaffolded.`);
+
+    // Install dependencies separately (--no-interactive doesn't auto-install)
+    p.log.step('Installing frontend dependencies...');
+    execSync('npm install', { cwd: path.join(projectDir, 'frontend'), stdio: 'inherit' });
+    p.log.success('Frontend dependencies installed.');
 
     const stack = detectFrontendStack(projectDir);
     await configureViteProxy(projectDir);
+    await generateHelloUI(projectDir);
     return { scaffolded: true, stack };
   } catch (e) {
     p.log.warn('Frontend scaffolding failed. Install manually if needed.');
@@ -478,6 +498,1189 @@ async function openInEditor(projectDir) {
     } catch (e) {
       p.log.warn(`Editor "${choice}" not found. Open manually: cd ${projectDir}`);
     }
+  }
+}
+
+// ============================================================
+// Hello UI Generator - Replaces Vite's dummy counter
+// ============================================================
+
+const HELLO_UI_STYLES = `
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    color: #e4e4e7;
+  }
+  .container { 
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 2rem; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #6ee7b7, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  .header p {
+    color: #a1a1aa;
+  }
+  .main-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+  .card h2 {
+    font-size: 1rem;
+    color: #a1a1aa;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 1rem;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+  }
+  .btn-group {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: #e4e4e7;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.15);
+  }
+  .response-area {
+    background: rgba(0,0,0,0.3);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    min-height: 100px;
+    overflow-x: auto;
+  }
+  .response-area .json-key { color: #93c5fd; }
+  .response-area .json-string { color: #86efac; }
+  .response-area .json-number { color: #fbbf24; }
+  .routes-list {
+    list-style: none;
+  }
+  .routes-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .routes-list li:last-child { border-bottom: none; }
+  .route-path {
+    font-family: 'Fira Code', monospace;
+    color: #86efac;
+    font-size: 0.85rem;
+  }
+  .route-method {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .method-get { background: #22c55e; color: #000; }
+  .method-post { background: #3b82f6; color: #fff; }
+  .method-delete { background: #ef4444; color: #fff; }
+  .footer {
+    text-align: center;
+    padding: 2rem 0 1rem;
+    color: #71717a;
+    font-size: 0.875rem;
+  }
+  .footer a {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+  .footer span {
+    color: #ef4444;
+  }
+  @media (max-width: 640px) {
+    .main-content { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.75rem; }
+  }
+`;
+
+async function generateReactHelloUI(projectDir) {
+  const appJsx = `import { useState } from 'react';
+
+function formatJson(json) {
+  if (!json) return '';
+  return JSON.stringify(json, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\\d+)/g, ': <span class="json-number">$1</span>');
+}
+
+function App() {
+  const [name, setName] = useState('');
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSayHello = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name)}\`);
+      const data = await res.json();
+      setResponse(data);
+    } catch (err) {
+      setResponse({ error: 'Failed to connect to backend', details: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setName('');
+    setResponse(null);
+  };
+
+  const routes = [
+    { method: 'GET', path: '/api/hello?name=World', desc: 'Greet someone' },
+    { method: 'GET', path: '/api/health', desc: 'Health check' },
+    { method: 'POST', path: '/api/echo', desc: 'Echo back data' },
+  ];
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <style>{${JSON.stringify(HELLO_UI_STYLES).replace(/`/g, '\\`')}}</style>
+      
+      <div className="container">
+        <div className="header">
+          <h1>{name ? \`Hello, \${name}!\` : 'SpringCraft App'}</h1>
+          <p>Your Spring Boot + React application is ready</p>
+        </div>
+
+        <div className="main-content">
+          <div className="card">
+            <h2>Say Hello</h2>
+            <div className="form-group">
+              <label>Your Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name..."
+                onKeyDown={(e) => e.key === 'Enter' && handleSayHello()}
+              />
+            </div>
+            <div className="btn-group">
+              <button className="btn btn-primary" onClick={handleSayHello} disabled={loading}>
+                {loading ? 'Loading...' : 'Say Hello'}
+              </button>
+              <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2>Response</h2>
+            <div className="response-area">
+              {response ? (
+                <pre dangerouslySetInnerHTML={{ __html: formatJson(response) }} />
+              ) : (
+                <span style={{ color: '#71717a' }}>Response will appear here...</span>
+              )}
+            </div>
+          </div>
+
+          <div className="card">
+            <h2>Backend Routes</h2>
+            <ul className="routes-list">
+              {routes.map((route, i) => (
+                <li key={i}>
+                  <span className="route-path">{route.path}</span>
+                  <span className={\`route-method method-\${route.method.toLowerCase()}\`}>{route.method}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="card">
+            <h2>Frontend Routes</h2>
+            <ul className="routes-list">
+              <li><span className="route-path">/</span><span className="method-get" style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.7rem', background: '#22c55e', color: '#000' }}>GET</span></li>
+            </ul>
+            <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#71717a' }}>
+              Note: Add routes using React Router in src/App.jsx
+            </p>
+          </div>
+        </div>
+
+        <div className="footer">
+          Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank" rel="noopener">springcraft</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'App.jsx'), appJsx);
+}
+
+async function generateVueHelloUI(projectDir) {
+  const appVue = `<template>
+  <div class="app-container">
+    <div class="container">
+      <div class="header">
+        <h1>{{ greeting }}</h1>
+        <p>Your Spring Boot + Vue application is ready</p>
+      </div>
+
+      <div class="main-content">
+        <div class="card">
+          <h2>Say Hello</h2>
+          <div class="form-group">
+            <label>Your Name</label>
+            <input
+              v-model="name"
+              type="text"
+              placeholder="Enter your name..."
+              @keyup.enter="handleSayHello"
+            />
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" @click="handleSayHello" :disabled="loading">
+              {{ loading ? 'Loading...' : 'Say Hello' }}
+            </button>
+            <button class="btn btn-secondary" @click="handleClear">Clear</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Response</h2>
+          <div class="response-area">
+            <pre v-if="response" v-html="formattedResponse"></pre>
+            <span v-else style="color: #71717a">Response will appear here...</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Backend Routes</h2>
+          <ul class="routes-list">
+            <li v-for="(route, i) in backendRoutes" :key="i">
+              <span class="route-path">{{ route.path }}</span>
+              <span :class="['route-method', 'method-' + route.method.toLowerCase()]">{{ route.method }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>Frontend Routes</h2>
+          <ul class="routes-list">
+            <li>
+              <span class="route-path">/</span>
+              <span class="route-method method-get">GET</span>
+            </li>
+          </ul>
+          <p style="margin-top: 1rem; font-size: 0.8rem; color: #71717a">
+            Note: Add routes using Vue Router
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+
+const name = ref('');
+const response = ref(null);
+const loading = ref(false);
+
+const greeting = computed(() => name.value ? \`Hello, \${name.value}!\` : 'SpringCraft App');
+
+const backendRoutes = [
+  { method: 'GET', path: '/api/hello?name=World' },
+  { method: 'GET', path: '/api/health' },
+  { method: 'POST', path: '/api/echo' },
+];
+
+const formattedResponse = computed(() => {
+  if (!response.value) return '';
+  return JSON.stringify(response.value, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\\\\d+)/g, ': <span class="json-number">$1</span>');
+});
+
+const handleSayHello = async () => {
+  if (!name.value.trim()) return;
+  loading.value = true;
+  try {
+    const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name.value)}\`);
+    response.value = await res.json();
+  } catch (err) {
+    response.value = { error: 'Failed to connect to backend', details: err.message };
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleClear = () => {
+  name.value = '';
+  response.value = null;
+};
+</script>
+
+<style scoped>
+${HELLO_UI_STYLES}
+</style>
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'App.vue'), appVue);
+}
+
+async function generateSvelteHelloUI(projectDir) {
+  const appSvelte = `<script>
+  let name = '';
+  let response = null;
+  let loading = false;
+
+  $: greeting = name ? \`Hello, \${name}!\` : 'SpringCraft App';
+
+  const backendRoutes = [
+    { method: 'GET', path: '/api/hello?name=World' },
+    { method: 'GET', path: '/api/health' },
+    { method: 'POST', path: '/api/echo' },
+  ];
+
+  async function handleSayHello() {
+    if (!name.trim()) return;
+    loading = true;
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name)}\`);
+      response = await res.json();
+    } catch (err) {
+      response = { error: 'Failed to connect to backend', details: err.message };
+    } finally {
+      loading = false;
+    }
+  }
+
+  function handleClear() {
+    name = '';
+    response = null;
+  }
+
+  function formatJson(json) {
+    if (!json) return '';
+    return JSON.stringify(json, null, 2)
+      .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+      .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+      .replace(/: (\\d+)/g, ': <span class="json-number">$1</span>');
+  }
+</script>
+
+<div class="app-container">
+  <div class="container">
+    <div class="header">
+      <h1>{greeting}</h1>
+      <p>Your Spring Boot + Svelte application is ready</p>
+    </div>
+
+    <div class="main-content">
+      <div class="card">
+        <h2>Say Hello</h2>
+        <div class="form-group">
+          <label for="name-input">Your Name</label>
+          <input
+            id="name-input"
+            type="text"
+            bind:value={name}
+            placeholder="Enter your name..."
+            on:keydown={(e) => e.key === 'Enter' && handleSayHello()}
+          />
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" on:click={handleSayHello} disabled={loading}>
+            {loading ? 'Loading...' : 'Say Hello'}
+          </button>
+          <button class="btn btn-secondary" on:click={handleClear}>Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Response</h2>
+        <div class="response-area">
+          {#if response}
+            <pre>{@html formatJson(response)}</pre>
+          {:else}
+            <span style="color: #71717a">Response will appear here...</span>
+          {/if}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Backend Routes</h2>
+        <ul class="routes-list">
+          {#each backendRoutes as route, i}
+            <li>
+              <span class="route-path">{route.path}</span>
+              <span class="route-method method-{route.method.toLowerCase()}">{route.method}</span>
+            </li>
+          {/each}
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Frontend Routes</h2>
+        <ul class="routes-list">
+          <li>
+            <span class="route-path">/</span>
+            <span class="route-method method-get">GET</span>
+          </li>
+        </ul>
+        <p style="margin-top: 1rem; font-size: 0.8rem; color: #71717a">
+          Note: Add routes using SvelteKit or svelte-routing
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+    </div>
+  </div>
+</div>
+</script>
+
+<style>
+${HELLO_UI_STYLES}
+</style>
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'App.svelte'), appSvelte);
+}
+
+async function generateAngularHelloUI(projectDir) {
+  const styles = `
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:host {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  color: #e4e4e7;
+  display: block;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.header { text-align: center; margin-bottom: 2rem; }
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #6ee7b7, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+.header p { color: #a1a1aa; }
+.main-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.card h2 {
+  font-size: 1rem;
+  color: #a1a1aa;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 1rem;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+}
+.btn-group { display: flex; gap: 0.75rem; }
+.btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+.btn-secondary { background: rgba(255,255,255,0.1); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.2); }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); }
+.response-area {
+  background: rgba(0,0,0,0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  min-height: 100px;
+  overflow-x: auto;
+}
+.response-area .json-key { color: #93c5fd; }
+.response-area .json-string { color: #86efac; }
+.response-area .json-number { color: #fbbf24; }
+.routes-list { list-style: none; }
+.routes-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.routes-list li:last-child { border-bottom: none; }
+.route-path { font-family: 'Fira Code', monospace; color: #86efac; font-size: 0.85rem; }
+.route-method {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.method-get { background: #22c55e; color: #000; }
+.method-post { background: #3b82f6; color: #fff; }
+.method-delete { background: #ef4444; color: #fff; }
+.footer {
+  text-align: center;
+  padding: 2rem 0 1rem;
+  color: #71717a;
+  font-size: 0.875rem;
+}
+.footer a { color: #3b82f6; text-decoration: none; }
+.footer span { color: #ef4444; }
+@media (max-width: 640px) { .main-content { grid-template-columns: 1fr; } .header h1 { font-size: 1.75rem; } }
+`;
+
+  const appComponentTs = `import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  name = '';
+  response: any = null;
+  loading = false;
+  formattedResponse = '';
+
+  get greeting(): string {
+    return this.name ? \`Hello, \${this.name}!\` : 'SpringCraft App';
+  }
+
+  backendRoutes = [
+    { method: 'GET', path: '/api/hello?name=World', desc: 'Greet someone' },
+    { method: 'GET', path: '/api/health', desc: 'Health check' },
+    { method: 'POST', path: '/api/echo', desc: 'Echo back data' },
+  ];
+
+  async handleSayHello() {
+    if (!this.name.trim()) return;
+    this.loading = true;
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(this.name)}\`);
+      this.response = await res.json();
+      this.formattedResponse = JSON.stringify(this.response, null, 2);
+    } catch (err: any) {
+      this.response = { error: 'Failed to connect to backend', details: err.message };
+      this.formattedResponse = JSON.stringify(this.response, null, 2);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  handleClear() {
+    this.name = '';
+    this.response = null;
+    this.formattedResponse = '';
+  }
+}
+`;
+
+  const appComponentHtml = `<div class="container">
+  <div class="header">
+    <h1>{{ greeting }}</h1>
+    <p>Your Spring Boot + Angular application is ready</p>
+  </div>
+
+  <div class="main-content">
+    <div class="card">
+      <h2>Say Hello</h2>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input
+          type="text"
+          [(ngModel)]="name"
+          placeholder="Enter your name..."
+          (keyup.enter)="handleSayHello()"
+        />
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" (click)="handleSayHello()" [disabled]="loading">
+          {{ loading ? 'Loading...' : 'Say Hello' }}
+        </button>
+        <button class="btn btn-secondary" (click)="handleClear()">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Response</h2>
+      <div class="response-area">
+        <pre *ngIf="formattedResponse">{{ formattedResponse }}</pre>
+        <span *ngIf="!formattedResponse" style="color: #71717a">Response will appear here...</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Backend Routes</h2>
+      <ul class="routes-list">
+        @for (route of backendRoutes; track route.path) {
+          <li>
+            <span class="route-path">{{ route.path }}</span>
+            <span [class]="'route-method method-' + route.method.toLowerCase()">{{ route.method }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Frontend Routes</h2>
+      <ul class="routes-list">
+        <li>
+          <span class="route-path">/</span>
+          <span class="route-method method-get">GET</span>
+        </li>
+      </ul>
+      <p style="margin-top: 1rem; font-size: 0.8rem; color: #71717a">
+        Note: Add routes using Angular Router in app.routes.ts
+      </p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+  </div>
+</div>
+`;
+
+  const frontendSrc = path.join(projectDir, 'frontend', 'src', 'app');
+  await fs.ensureDir(frontendSrc);
+  
+  await fs.writeFile(path.join(frontendSrc, 'app.component.ts'), appComponentTs);
+  await fs.writeFile(path.join(frontendSrc, 'app.component.html'), appComponentHtml);
+  await fs.writeFile(path.join(frontendSrc, 'app.component.css'), styles);
+}
+
+
+async function generateLitHelloUI(projectDir) {
+  const styles = `
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:host {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  color: #e4e4e7;
+  display: block;
+}
+.container { max-width: 800px; margin: 0 auto; padding: 2rem; min-height: 100vh; display: flex; flex-direction: column; }
+.header { text-align: center; margin-bottom: 2rem; }
+.header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, #6ee7b7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+.header p { color: #a1a1aa; }
+.main-content { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; }
+.card h2 { font-size: 1rem; color: #a1a1aa; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input { width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: #fff; font-size: 1rem; }
+.form-group input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+.btn-group { display: flex; gap: 0.75rem; }
+.btn { flex: 1; padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+.btn-secondary { background: rgba(255,255,255,0.1); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.2); }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); }
+.response-area { background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 1rem; font-family: 'Fira Code', monospace; font-size: 0.85rem; min-height: 100px; overflow-x: auto; }
+.response-area .json-key { color: #93c5fd; }
+.response-area .json-string { color: #86efac; }
+.response-area .json-number { color: #fbbf24; }
+.routes-list { list-style: none; }
+.routes-list li { padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+.routes-list li:last-child { border-bottom: none; }
+.route-path { font-family: 'Fira Code', monospace; color: #86efac; font-size: 0.85rem; }
+.route-method { padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.method-get { background: #22c55e; color: #000; }
+.method-post { background: #3b82f6; color: #fff; }
+.footer { text-align: center; padding: 2rem 0 1rem; color: #71717a; font-size: 0.875rem; }
+.footer a { color: #3b82f6; text-decoration: none; }
+.footer span { color: #ef4444; }
+@media (max-width: 640px) { .main-content { grid-template-columns: 1fr; } .header h1 { font-size: 1.75rem; } }
+`;
+
+  const myElement = `import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+
+function formatJson(json) {
+  if (!json) return '';
+  return JSON.stringify(json, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\\\\d+)/g, ': <span class="json-number">$1</span>');
+}
+
+@customElement('my-element')
+export class MyElement extends LitElement {
+  static styles = css\`${styles}\`;
+
+  @state() name = '';
+  @state() response = null;
+  @state() loading = false;
+
+  get greeting() {
+    return this.name ? \`Hello, \${this.name}!\` : 'SpringCraft App';
+  }
+
+  backendRoutes = [
+    { method: 'GET', path: '/api/hello?name=World', desc: 'Greet someone' },
+    { method: 'GET', path: '/api/health', desc: 'Health check' },
+    { method: 'POST', path: '/api/echo', desc: 'Echo back data' },
+  ];
+
+  async handleSayHello() {
+    if (!this.name.trim()) return;
+    this.loading = true;
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(this.name)}\`);
+      this.response = await res.json();
+    } catch (err) {
+      this.response = { error: 'Failed to connect to backend', details: err.message };
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  handleClear() {
+    this.name = '';
+    this.response = null;
+  }
+
+  render() {
+    return html\`
+      <div class="container">
+        <div class="header">
+          <h1>\${this.greeting}</h1>
+          <p>Your Spring Boot + Lit application is ready</p>
+        </div>
+        <div class="main-content">
+          <div class="card">
+            <h2>Say Hello</h2>
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" .value=\${this.name} @input=\${(e) => this.name = e.target.value} @keyup.enter=\${this.handleSayHello} placeholder="Enter your name..." />
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" @click=\${this.handleSayHello} ?disabled=\${this.loading}>
+                \${this.loading ? 'Loading...' : 'Say Hello'}
+              </button>
+              <button class="btn btn-secondary" @click=\${this.handleClear}>Clear</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Response</h2>
+            <div class="response-area">
+              \${this.response ? html\`<pre>\${formatJson(this.response)}</pre>\` : html\`<span style="color: #71717a">Response will appear here...</span>\`}
+            </div>
+          </div>
+          <div class="card">
+            <h2>Backend Routes</h2>
+            <ul class="routes-list">
+              \${this.backendRoutes.map((route) => html\`
+                <li>
+                  <span class="route-path">\${route.path}</span>
+                  <span class="route-method method-\${route.method.toLowerCase()}">\${route.method}</span>
+                </li>
+              \`)}
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Frontend Routes</h2>
+            <ul class="routes-list">
+              <li><span class="route-path">/</span><span class="route-method method-get">GET</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer">
+          Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+        </div>
+      </div>
+    \`;
+  }
+}
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'my-element.ts'), myElement);
+  
+  
+  const mainTs = `import './my-element';
+import { html, render } from 'lit';
+
+render(html\`<my-element></my-element>\`, document.body);
+`;
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'main.ts'), mainTs);
+}
+
+
+async function generatePreactHelloUI(projectDir) {
+  const appJsx = `import { useState } from 'preact/hooks';
+
+function formatJson(json) {
+  if (!json) return '';
+  return JSON.stringify(json, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\\\\d+)/g, ': <span class="json-number">$1</span>');
+}
+
+const styles = \`${HELLO_UI_STYLES.replace(/`/g, '\\`')}\`;
+
+export function App() {
+  const [name, setName] = useState('');
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSayHello = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name)}\`);
+      const data = await res.json();
+      setResponse(data);
+    } catch (err) {
+      setResponse({ error: 'Failed to connect to backend', details: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setName('');
+    setResponse(null);
+  };
+
+  const routes = [
+    { method: 'GET', path: '/api/hello?name=World', desc: 'Greet someone' },
+    { method: 'GET', path: '/api/health', desc: 'Health check' },
+    { method: 'POST', path: '/api/echo', desc: 'Echo back data' },
+  ];
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <style>{\`\${styles}\`}</style>
+      <div className="container">
+        <div className="header">
+          <h1>{name ? \`Hello, \${name}!\` : 'SpringCraft App'}</h1>
+          <p>Your Spring Boot + Preact application is ready</p>
+        </div>
+        <div className="main-content">
+          <div className="card">
+            <h2>Say Hello</h2>
+            <div className="form-group">
+              <label>Your Name</label>
+              <input type="text" value={name} onInput={(e) => setName(e.target.value)} onKeyUp={(e) => e.key === 'Enter' && handleSayHello()} placeholder="Enter your name..." />
+            </div>
+            <div className="btn-group">
+              <button className="btn btn-primary" onClick={handleSayHello} disabled={loading}>
+                {loading ? 'Loading...' : 'Say Hello'}
+              </button>
+              <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+            </div>
+          </div>
+          <div className="card">
+            <h2>Response</h2>
+            <div className="response-area">
+              {response ? (
+                <pre dangerouslySetInnerHTML={{ __html: formatJson(response) }} />
+              ) : (
+                <span style={{ color: '#71717a' }}>Response will appear here...</span>
+              )}
+            </div>
+          </div>
+          <div className="card">
+            <h2>Backend Routes</h2>
+            <ul className="routes-list">
+              {routes.map((route, i) => (
+                <li key={i}>
+                  <span className="route-path">{route.path}</span>
+                  <span className={\`route-method method-\${route.method.toLowerCase()}\`}>{route.method}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card">
+            <h2>Frontend Routes</h2>
+            <ul className="routes-list">
+              <li><span className="route-path">/</span><span className="method-get" style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.7rem', background: '#22c55e', color: '#000' }}>GET</span></li>
+            </ul>
+          </div>
+        </div>
+        <div className="footer">
+          Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'app.jsx'), appJsx);
+}
+
+
+async function generateSolidHelloUI(projectDir) {
+  const appJsx = `import { createSignal } from 'solid-js';
+
+function formatJson(json) {
+  if (!json) return '';
+  return JSON.stringify(json, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\\\\d+)/g, ': <span class="json-number">$1</span>');
+}
+
+const styles = \`${HELLO_UI_STYLES.replace(/`/g, '\\`')}\`;
+
+function App() {
+  const [name, setName] = createSignal('');
+  const [response, setResponse] = createSignal(null);
+  const [loading, setLoading] = createSignal(false);
+
+  const greeting = () => name() ? \`Hello, \${name()}!\` : 'SpringCraft App';
+
+  const handleSayHello = async () => {
+    if (!name().trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(\`/api/hello?name=\${encodeURIComponent(name())}\`);
+      const data = await res.json();
+      setResponse(data);
+    } catch (err) {
+      setResponse({ error: 'Failed to connect to backend', details: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setName('');
+    setResponse(null);
+  };
+
+  const routes = [
+    { method: 'GET', path: '/api/hello?name=World', desc: 'Greet someone' },
+    { method: 'GET', path: '/api/health', desc: 'Health check' },
+    { method: 'POST', path: '/api/echo', desc: 'Echo back data' },
+  ];
+
+  return (
+    <div style={{ "min-height": "100vh", display: "flex", "flex-direction": "column" }}>
+      <style>{styles}</style>
+      <div class="container">
+        <div class="header">
+          <h1>{greeting()}</h1>
+          <p>Your Spring Boot + Solid application is ready</p>
+        </div>
+        <div class="main-content">
+          <div class="card">
+            <h2>Say Hello</h2>
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" value={name()} onInput={(e) => setName(e.target.value)} onKeyUp={(e) => e.key === 'Enter' && handleSayHello()} placeholder="Enter your name..." />
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onClick={handleSayHello} disabled={loading()}>
+                {loading() ? 'Loading...' : 'Say Hello'}
+              </button>
+              <button class="btn btn-secondary" onClick={handleClear}>Clear</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Response</h2>
+            <div class="response-area">
+              {response() ? (
+                <pre innerHTML={formatJson(response())} />
+              ) : (
+                <span style={{ color: '#71717a' }}>Response will appear here...</span>
+              )}
+            </div>
+          </div>
+          <div class="card">
+            <h2>Backend Routes</h2>
+            <ul class="routes-list">
+              {routes.map((route, i) => (
+                <li key={i}>
+                  <span class="route-path">{route.path}</span>
+                  <span class={\`route-method method-\${route.method.toLowerCase()}\`}>{route.method}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Frontend Routes</h2>
+            <ul class="routes-list">
+              <li><span class="route-path">/</span><span class="method-get" style={{ padding: '0.25rem 0.5rem', "border-radius": '0.25rem', "font-size": '0.7rem', background: '#22c55e', color: '#000' }}>GET</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer">
+          Built with <span>❤</span> using <a href="https://github.com/fmitesh/springcraft" target="_blank">springcraft</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+`;
+
+  await fs.writeFile(path.join(projectDir, 'frontend', 'src', 'App.jsx'), appJsx);
+}
+
+async function generateHelloUI(projectDir) {
+  const pkgPath = path.join(projectDir, 'frontend', 'package.json');
+  
+  if (!fs.existsSync(pkgPath)) {
+    p.log.warn('Frontend package.json not found, skipping Hello UI generation.');
+    return;
+  }
+
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    
+    if (pkg.dependencies?.react || pkg.devDependencies?.react) {
+      await generateReactHelloUI(projectDir);
+      p.log.success('Generated React Hello UI (replaced default counter)');
+    } else if (pkg.dependencies?.vue || pkg.devDependencies?.vue) {
+      await generateVueHelloUI(projectDir);
+      p.log.success('Generated Vue Hello UI (replaced default counter)');
+    } else if (pkg.dependencies?.svelte || pkg.devDependencies?.svelte) {
+      await generateSvelteHelloUI(projectDir);
+      p.log.success('Generated Svelte Hello UI (replaced default counter)');
+    } else if (pkg.dependencies?.['@angular/core']) {
+      await generateAngularHelloUI(projectDir);
+      p.log.success('Generated Angular Hello UI (replaced default content)');
+    } else if (pkg.dependencies?.preact || pkg.devDependencies?.preact) {
+      await generatePreactHelloUI(projectDir);
+      p.log.success('Generated Preact Hello UI (replaced default counter)');
+    } else if (pkg.dependencies?.solid-js || pkg.devDependencies?.solid-js) {
+      await generateSolidHelloUI(projectDir);
+      p.log.success('Generated Solid Hello UI (replaced default counter)');
+    } else if (pkg.dependencies?.lit || pkg.devDependencies?.lit) {
+      await generateLitHelloUI(projectDir);
+      p.log.success('Generated Lit Hello UI (replaced default counter)');
+    } else {
+      p.log.warn('Unknown frontend stack, skipping Hello UI generation.');
+    }
+  } catch (e) {
+    p.log.warn(`Failed to generate Hello UI: ${e.message}`);
   }
 }
 

@@ -16,7 +16,9 @@ function parseFlags(args) {
     } else if (arg === '--build' || arg === '-b') {
       flags.build = true;
     } else if (arg === '--frontend' || arg === '-f') {
-      flags.frontend = true;
+      if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
+        flags.frontend = args[++i];
+      }
     } else if (arg === '--dev' || arg === '-d') {
       flags.dev = true;
     } else if (arg === '--prod' || arg === '-p') {
@@ -35,6 +37,30 @@ function parseFlags(args) {
     } else if (arg === '--preset') {
       if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
         flags.preset = args[++i];
+      }
+    } else if (arg === '--arch') {
+      if (i + 1 < args.length) flags.arch = args[++i];
+    } else if (arg === '--build-tool') {
+      if (i + 1 < args.length) flags.buildTool = args[++i];
+    } else if (arg === '--language') {
+      if (i + 1 < args.length) flags.language = args[++i];
+    } else if (arg === '--java-version') {
+      if (i + 1 < args.length) flags.javaVersion = args[++i];
+    } else if (arg === '--spring-boot-version') {
+      if (i + 1 < args.length) flags.springBootVersion = args[++i];
+    } else if (arg === '--group-id') {
+      if (i + 1 < args.length) flags.groupId = args[++i];
+    } else if (arg === '--artifact-id') {
+      if (i + 1 < args.length) flags.artifactId = args[++i];
+    } else if (arg === '--package-name') {
+      if (i + 1 < args.length) flags.packageName = args[++i];
+    } else if (arg === '--description') {
+      if (i + 1 < args.length) flags.description = args[++i];
+    } else if (arg === '--packaging') {
+      if (i + 1 < args.length) flags.packaging = args[++i];
+    } else if (arg === '--dependencies') {
+      if (i + 1 < args.length) {
+        flags.dependencies = args[++i].split(',').filter(Boolean);
       }
     } else if (arg === '-h' || arg === '--help') {
       flags.help = true;
@@ -69,6 +95,23 @@ Usage:
   springcraft --dry-run                   Show URL without downloading
   springcraft --help                      Show this help
   springcraft --version                   Show version
+
+Non-interactive flags (for automation):
+  --arch <fullstack|backend-only>
+  --frontend <react|vue|svelte|angular|preact|solid|lit|none>
+  --build-tool <maven-project|gradle-project|gradle-project-kotlin>
+  --language <java|kotlin|groovy>
+  --java-version <17|21|11|24>
+  --spring-boot-version <3.5.0|3.4.5|3.3.11|3.2.12>
+  --group-id <com.example>
+  --artifact-id <my-app>
+  --package-name <com.example.myapp>
+  --description <description>
+  --packaging <jar|war>
+  --dependencies <web,data-jpa,lombok,...>
+
+Example (fully non-interactive):
+  springcraft /path/to/project --arch fullstack --frontend react --build-tool maven-project --java-version 17 --dependencies web,data-jpa --group-id com.example --package-name com.example.myapp --description "My App" --packaging jar
 
 Ports:
   Backend:  http://localhost:8080
