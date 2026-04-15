@@ -51,7 +51,7 @@ async function askFrontend(projectDir, answers) {
 
   if (choice === 'angular') {
     try {
-      p.log.step('Running: npx @angular/cli new frontend');
+      p.log.step('Running: npx @angular.cli new frontend');
       execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', { cwd: projectDir, stdio: 'inherit' });
       p.log.success('Angular frontend scaffolded.');
       return true;
@@ -66,10 +66,54 @@ async function askFrontend(projectDir, answers) {
     p.log.info('Select your framework in the Vite CLI...');
     execSync('npm create vite@latest', { cwd: projectDir, stdio: 'inherit', input: `\n` });
     p.log.success('Frontend scaffolded.');
+
+    await configureViteProxy(projectDir);
     return true;
   } catch (e) {
     p.log.warn('Frontend scaffolding failed. Install manually if needed.');
     return false;
+  }
+}
+
+async function configureViteProxy(projectDir) {
+  const viteConfigPath = path.join(projectDir, 'frontend', 'vite.config.js');
+
+  if (!fs.existsSync(viteConfigPath)) {
+    p.log.warn('vite.config.js not found, skipping proxy configuration.');
+    return;
+  }
+
+  const proxyConfig = `
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/auth': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },`;
+
+  try {
+    let config = await fs.readFile(viteConfigPath, 'utf-8');
+
+    if (config.includes('proxy:')) {
+      p.log.info('Proxy config already exists in vite.config.js');
+      return;
+    }
+
+    config = config.replace(
+      /export default defineConfig\(\{/,
+      `export default defineConfig({${proxyConfig}`
+    );
+
+    await fs.writeFile(viteConfigPath, config);
+    p.log.success('Vite proxy configured: /api → http://localhost:8080');
+  } catch (e) {
+    p.log.warn('Could not configure Vite proxy. Configure manually if needed.');
   }
 }
 
@@ -414,16 +458,21 @@ export async function runPostScaffold(projectDir, answers) {
   await openInEditor(projectDir);
 
   const isGradle = answers.buildTool?.includes('gradle');
+  const frontendExists = fs.existsSync(path.join(projectDir, 'frontend'));
+  const hasFrontend = frontendExists || answers.arch === 'fullstack';
+  const isFullstack = answers.arch === 'fullstack';
   const springcraftConfig = {
     name: answers.artifactId,
-    arch: frontendWasScaffolded ? 'fullstack' : 'backend-only',
+    arch: isFullstack ? 'fullstack' : answers.arch || 'backend-only',
     buildTool: answers.buildTool,
     language: answers.language,
     javaVersion: answers.javaVersion,
     springBootVersion: answers.springBootVersion,
     packageName: answers.packageName,
-    hasFrontend: frontendWasScaffolded,
-    frontendDir: frontendWasScaffolded ? 'frontend' : null,
+    hasFrontend: hasFrontend,
+    frontendDir: hasFrontend ? 'frontend' : null,
+    backendPort: 8080,
+    frontendPort: 5173,
     runCommand: isGradle ? './gradlew bootRun' : './mvnw spring-boot:run',
     buildCommand: isGradle ? './gradlew build' : './mvnw clean package',
   };

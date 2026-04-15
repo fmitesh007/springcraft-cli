@@ -177,6 +177,17 @@ export async function askQuestions(flags = {}) {
 
   if (p.isCancel(artifactId)) { p.cancel('Cancelled.'); process.exit(0); }
 
+  const arch = await p.select({
+    message: 'Architecture:',
+    options: [
+      { value: 'fullstack', label: 'Fullstack (Monolithic)', hint: 'Backend + Frontend in one app' },
+      { value: 'backend-only', label: 'Backend Only', hint: 'REST API / Microservice' },
+    ],
+    initialValue: flags.arch,
+  });
+
+  if (p.isCancel(arch)) { p.cancel('Cancelled.'); process.exit(0); }
+
   const autoGroupId = `com.${artifactId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   const autoPackageName = `${autoGroupId}.${artifactId.replace(/[^a-zA-Z0-9]/g, '')}`;
   const autoDescription = `Project ${artifactId}`;
@@ -285,5 +296,5 @@ export async function askQuestions(flags = {}) {
     await new Promise(r => setTimeout(r, 500));
   }
 
-  return { artifactId, buildTool, language, springBootVersion, javaVersion, groupId, packageName, description, packaging, dependencies };
+  return { artifactId, arch, buildTool, language, springBootVersion, javaVersion, groupId, packageName, description, packaging, dependencies };
 }

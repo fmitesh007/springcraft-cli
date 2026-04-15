@@ -70,6 +70,8 @@ function parseFlags(args) {
       flags.packaging = 'war';
     } else if (arg === '--deps') {
       if (i + 1 < args.length) flags.dependencies = args[++i].split(',').map(d => d.trim());
+    } else if (arg === '--arch') {
+      if (i + 1 < args.length) flags.arch = args[++i];
     } else if (!arg.startsWith('-')) {
       flags.targetPath = arg === '.' ? process.cwd() : path.resolve(arg);
     }
@@ -92,7 +94,7 @@ Usage:
   springcraft --docker up                Start Docker services
   springcraft --docker down               Stop Docker services
   springcraft --docker logs               View Docker logs
-  springcraft --info                      Show project info
+  springcraft --info                      Show project info (with ports)
   springcraft --list-presets              List saved presets
   springcraft --preset <name>             Scaffold with a saved preset
   springcraft --dry-run                   Show Initializr URL without downloading
@@ -104,13 +106,19 @@ Scaffold Options:
   --java|--kotlin|--groovy               Language
   --java-version <version>               Java version (11, 17, 21, 24)
   --boot <version>                       Spring Boot version
+  --arch <fullstack|backend-only>        Architecture (default: backend-only)
   --group <groupId>                      Group ID (e.g., com.example)
   --artifact <id>                        Artifact ID
   --package <name>                       Package name
   --deps <dep1,dep2,...>                Dependencies
 
+Ports:
+  Backend:  http://localhost:8080
+  Frontend: http://localhost:5173 (fullstack mode)
+
 Examples:
-  springcraft .                           Create in current directory
+  springcraft .                           Create backend-only project
+  springcraft . --arch fullstack          Create fullstack (Backend + Frontend)
   springcraft ~/projects/my-api           Create in specific directory
   springcraft --run                       Run from project directory
   springcraft --run --dev                 Run both backend and frontend

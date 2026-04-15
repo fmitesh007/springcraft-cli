@@ -212,24 +212,33 @@ export function handleInfo() {
 
   const runCmd = config.runCommand || (config.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run');
   const buildCmd = config.buildCommand || (config.buildTool?.includes('gradle') ? './gradlew build' : './mvnw clean package');
+  const backendPort = config.backendPort || 8080;
+  const frontendPort = config.frontendPort || 5173;
+
+  const arch = config.arch === 'fullstack' ? 'fullstack (Monolithic)' : 'backend-only';
+  const buildToolName = config.buildTool === 'maven-project' ? 'Maven' : config.buildTool === 'gradle-project-kotlin' ? 'Gradle Kotlin DSL' : 'Gradle';
+  const langName = config.language === 'java' ? 'Java' : config.language === 'kotlin' ? 'Kotlin' : 'Groovy';
+  const frontendDir = config.hasFrontend ? (config.frontendDir || 'frontend') : 'none';
 
   const lines = [
     '',
-    '╭─ Project Info ─────────────────────────╮',
-    `│ Name:         ${(config.name || 'unknown').padEnd(28)}│`,
-    `│ Architecture: ${((config.arch === 'fullstack' ? 'fullstack' : 'backend-only') || 'backend-only').padEnd(28)}│`,
-    `│ Build Tool:   ${(config.buildTool === 'maven-project' ? 'Maven' : config.buildTool === 'gradle-project-kotlin' ? 'Gradle Kotlin DSL' : 'Gradle').padEnd(28)}│`,
-    `│ Language:     ${((config.language === 'java' ? 'Java' : config.language === 'kotlin' ? 'Kotlin' : 'Groovy') || 'Java').padEnd(28)}│`,
-    `│ Java Version: ${((config.javaVersion || '17') + '').padEnd(28)}│`,
-    `│ Spring Boot:  ${((config.springBootVersion || '3.5.0') + '').padEnd(28)}│`,
-    config.hasFrontend
-      ? `│ Frontend:     ${((config.frontendDir || 'frontend') + '').padEnd(28)}│`
-      : `│ Frontend:     ${'none'.padEnd(28)}│`,
-    `│ Run:          ${runCmd.substring(0, 28).padEnd(28)}│`,
-    `│ Build:        ${buildCmd.substring(0, 28).padEnd(28)}│`,
-    '╰────────────────────────────────────────╯',
+    '╭─ Project Info ────────────────────────────────╮',
+    `│ Name:         ${(config.name || 'unknown').padEnd(35)}│`,
+    `│ Architecture: ${arch.padEnd(35)}│`,
+    `│ Build Tool:   ${buildToolName.padEnd(35)}│`,
+    `│ Language:     ${langName.padEnd(35)}│`,
+    `│ Java Version: ${(config.javaVersion || '17').padEnd(35)}│`,
+    `│ Spring Boot:  ${(config.springBootVersion || '3.5.0').padEnd(35)}│`,
+    `│ Frontend:     ${frontendDir.padEnd(35)}│`,
+    '├─────────────────────────────────────────────────┤',
+    `│  Backend:  http://localhost:${String(backendPort).padEnd(24)}│`,
+    config.hasFrontend ? `│  Frontend: http://localhost:${String(frontendPort).padEnd(23)}│` : '',
+    '├─────────────────────────────────────────────────┤',
+    `│ Run:       ${runCmd.substring(0, 35).padEnd(35)}│`,
+    `│ Build:     ${buildCmd.substring(0, 35).padEnd(35)}│`,
+    '╰─────────────────────────────────────────────────╯',
     ''
-  ];
+  ].filter(line => line !== '');
 
   console.log(lines.join('\n'));
 }

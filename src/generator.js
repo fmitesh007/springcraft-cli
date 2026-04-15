@@ -107,12 +107,23 @@ export async function run(flags = {}) {
   }
 
   const runCommand = answers.buildTool?.includes('gradle') ? './gradlew bootRun' : './mvnw spring-boot:run';
+  const isFullstack = answers.arch === 'fullstack';
 
   const cdCommand = targetPath ? '' : `  cd ${answers.artifactId}\n`;
 
-  p.outro(`Project created successfully!
+  let portInfo = '';
+  if (isFullstack) {
+    portInfo = `\nPorts:
+  Backend:  http://localhost:8080
+  Frontend: http://localhost:5173`;
+  } else {
+    portInfo = `\nPort:
+  Backend:  http://localhost:8080`;
+  }
 
-Next steps:${cdCommand}
-  ${runCommand}
+  p.outro(`Project created successfully!${cdCommand}
+  ${runCommand}${portInfo}
+
+Run \`springcraft --help\` for available commands.
 `);
 }
