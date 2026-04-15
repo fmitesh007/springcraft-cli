@@ -1,9 +1,27 @@
 import * as p from '@clack/prompts';
 import { execSync } from 'child_process';
+import fs from 'fs-extra';
 import path from 'path';
 import { detectFrontendStack } from '../../shared/index.js';
 import { generateHelloUI } from './templates/index.js';
 import { configureViteProxy } from './proxy.js';
+
+async function tryScaffoldVite(projectDir, choice, env) {
+  const commands = [
+    `npx create-vite@latest frontend --template ${choice} --skip-install`,
+    `npm create vite@latest frontend -- --template ${choice}`,
+  ];
+  
+  for (const cmd of commands) {
+    try {
+      execSync(cmd, { cwd: projectDir, stdio: 'inherit', env });
+      return true;
+    } catch (e) {
+      continue;
+    }
+  }
+  return false;
+}
 
 export async function scaffoldFrontend(projectDir, framework, cliFlag) {
   if (framework === 'none') {
@@ -12,19 +30,30 @@ export async function scaffoldFrontend(projectDir, framework, cliFlag) {
   }
 
   const choice = cliFlag || framework;
+  const env = { 
+    ...process.env, 
+    CI: 'true',
+    NPM_CONFIG_YES: 'true',
+    npm_config_yes: 'true'
+  };
 
   try {
-    p.log.step(`Running: npm create vite@latest frontend -- --template ${choice}`);
+    p.log.step(`Running: npx create-vite@latest frontend --template ${choice}`);
     
-    const env = { ...process.env, CI: 'true' };
-    execSync(`npm create vite@latest frontend -- --template ${choice}`, {
-      cwd: projectDir,
-      stdio: 'inherit',
-      env
-    });
+    const success = await tryScaffoldVite(projectDir, choice, env);
+    
+    if (!success) {
+      p.log.warn('Frontend scaffolding failed. Install manually if needed.');
+      return { scaffolded: false, stack: null };
+    }
     
     const stackName = choice.charAt(0).toUpperCase() + choice.slice(1);
     p.log.success(`${stackName} frontend scaffolded.`);
+
+    if (!fs.existsSync(path.join(projectDir, 'frontend', 'package.json'))) {
+      p.log.warn('Frontend package.json not found. Skipping install.');
+      return { scaffolded: false, stack: null };
+    }
 
     p.log.step('Installing frontend dependencies...');
     execSync('npm install', {
