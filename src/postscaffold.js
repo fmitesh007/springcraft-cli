@@ -47,17 +47,18 @@ async function askFrontend(projectDir, answers) {
     ],
   });
 
-  if (p.isCancel(choice) || choice === 'none') return;
+  if (p.isCancel(choice) || choice === 'none') return false;
 
   if (choice === 'angular') {
     try {
       p.log.step('Running: npx @angular/cli new frontend');
       execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', { cwd: projectDir, stdio: 'inherit' });
       p.log.success('Angular frontend scaffolded.');
+      return true;
     } catch (e) {
       p.log.warn('Angular scaffolding failed. Install manually if needed.');
+      return false;
     }
-    return;
   }
 
   try {
@@ -65,8 +66,10 @@ async function askFrontend(projectDir, answers) {
     p.log.info('Select your framework in the Vite CLI...');
     execSync('npm create vite@latest', { cwd: projectDir, stdio: 'inherit', input: `\n` });
     p.log.success('Frontend scaffolded.');
+    return true;
   } catch (e) {
     p.log.warn('Frontend scaffolding failed. Install manually if needed.');
+    return false;
   }
 }
 
@@ -142,7 +145,7 @@ async function generateEnvFiles(projectDir, answers) {
     exampleLines.push('SPRING_DATASOURCE_URL=', 'DB_USER=', 'DB_PASS=');
   } else if (deps.includes('mariadb')) {
     lines.push('SPRING_DATASOURCE_URL=jdbc:mariadb://localhost:3306/dbname', 'DB_USER=root', 'DB_PASS=secret');
-    exampleLines.push('SPRING_DATASOURCE_URL=', 'DB_USER=', 'DB_PASS=');
+    exampleLines.push('SPRING_DAaTASOURCE_URL=', 'DB_USER=', 'DB_PASS=');
   } else if (deps.includes('data-jpa') || deps.includes('jdbc')) {
     lines.push('SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb', 'DB_USER=sa', 'DB_PASS=');
     exampleLines.push('SPRING_DATASOURCE_URL=', 'DB_USER=', 'DB_PASS=');
@@ -403,10 +406,28 @@ async function openInEditor(projectDir) {
 }
 
 export async function runPostScaffold(projectDir, answers) {
-  await askFrontend(projectDir, answers);
+  const frontendWasScaffolded = await askFrontend(projectDir, answers);
   await generateDockerCompose(projectDir, answers);
   await generateEnvFiles(projectDir, answers);
   await generateReadme(projectDir, answers);
   await initGit(projectDir, answers);
   await openInEditor(projectDir);
+
+  const isGradle = answers.buildTool?.includes('gradle');
+  const springcraftConfig = {
+    name: answers.artifactId,
+    arch: frontendWasScaffolded ? 'fullstack' : 'backend-only',
+    buildTool: answers.buildTool,
+    language: answers.language,
+    javaVersion: answers.javaVersion,
+    springBootVersion: answers.springBootVersion,
+    packageName: answers.packageName,
+    hasFrontend: frontendWasScaffolded,
+    frontendDir: frontendWasScaffolded ? 'frontend' : null,
+    runCommand: isGradle ? './gradlew bootRun' : './mvnw spring-boot:run',
+    buildCommand: isGradle ? './gradlew build' : './mvnw clean package',
+  };
+
+  await fs.writeJson(path.join(projectDir, 'springcraft.json'), springcraftConfig, { spaces: 2 });
+  p.log.success('springcraft.json written.');
 }
