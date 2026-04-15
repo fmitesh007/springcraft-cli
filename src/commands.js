@@ -218,7 +218,9 @@ export function handleInfo() {
   const arch = config.arch === 'fullstack' ? 'fullstack (Monolithic)' : 'backend-only';
   const buildToolName = config.buildTool === 'maven-project' ? 'Maven' : config.buildTool === 'gradle-project-kotlin' ? 'Gradle Kotlin DSL' : 'Gradle';
   const langName = config.language === 'java' ? 'Java' : config.language === 'kotlin' ? 'Kotlin' : 'Groovy';
-  const frontendDir = config.hasFrontend ? (config.frontendDir || 'frontend') : 'none';
+  const frontendDisplay = config.hasFrontend && config.frontendStack 
+    ? `${config.frontendStack} (${config.frontendDir || 'frontend'})`
+    : (config.hasFrontend ? (config.frontendDir || 'frontend') : 'none');
 
   const lines = [
     '',
@@ -229,7 +231,7 @@ export function handleInfo() {
     `│ Language:     ${langName.padEnd(35)}│`,
     `│ Java Version: ${(config.javaVersion || '17').padEnd(35)}│`,
     `│ Spring Boot:  ${(config.springBootVersion || '3.5.0').padEnd(35)}│`,
-    `│ Frontend:     ${frontendDir.padEnd(35)}│`,
+    `│ Frontend:     ${frontendDisplay.padEnd(35)}│`,
     '├─────────────────────────────────────────────────┤',
     `│  Backend:  http://localhost:${String(backendPort).padEnd(24)}│`,
     config.hasFrontend ? `│  Frontend: http://localhost:${String(frontendPort).padEnd(23)}│` : '',

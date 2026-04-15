@@ -38,26 +38,33 @@ function yamlStringify(obj, indent = 0) {
 }
 
 async function askFrontend(projectDir, answers) {
+  if (answers.arch === 'backend-only') {
+    p.log.info('Skipping frontend (backend-only architecture).');
+    return { scaffolded: false, stack: null };
+  }
+
   const choice = await p.select({
     message: 'Add a frontend?',
     options: [
-      { value: 'none', label: 'None' },
       { value: 'vite', label: 'Yes (Vite)' },
       { value: 'angular', label: 'Angular' },
+      { value: 'none', label: 'None' },
     ],
   });
 
-  if (p.isCancel(choice) || choice === 'none') return false;
+  if (p.isCancel(choice) || choice === 'none') {
+    return { scaffolded: false, stack: null };
+  }
 
   if (choice === 'angular') {
     try {
       p.log.step('Running: npx @angular.cli new frontend');
       execSync('npx @angular/cli new frontend --skip-git --skip-tests --style css --ssr=false', { cwd: projectDir, stdio: 'inherit' });
       p.log.success('Angular frontend scaffolded.');
-      return true;
+      return { scaffolded: true, stack: 'Angular' };
     } catch (e) {
       p.log.warn('Angular scaffolding failed. Install manually if needed.');
-      return false;
+      return { scaffolded: false, stack: null };
     }
   }
 
@@ -67,12 +74,27 @@ async function askFrontend(projectDir, answers) {
     execSync('npm create vite@latest', { cwd: projectDir, stdio: 'inherit', input: `\n` });
     p.log.success('Frontend scaffolded.');
 
+    const stack = detectFrontendStack(projectDir);
     await configureViteProxy(projectDir);
-    return true;
+    return { scaffolded: true, stack };
   } catch (e) {
     p.log.warn('Frontend scaffolding failed. Install manually if needed.');
-    return false;
+    return { scaffolded: false, stack: null };
   }
+}
+
+function detectFrontendStack(projectDir) {
+  try {
+    const pkgPath = path.join(projectDir, 'frontend', 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      if (pkg.dependencies?.react) return 'React';
+      if (pkg.dependencies?.vue) return 'Vue';
+      if (pkg.dependencies?.svelte) return 'Svelte';
+      if (pkg.dependencies?.['@angular/core']) return 'Angular';
+    }
+  } catch (e) {}
+  return 'Vite';
 }
 
 async function configureViteProxy(projectDir) {
@@ -450,7 +472,7 @@ async function openInEditor(projectDir) {
 }
 
 export async function runPostScaffold(projectDir, answers) {
-  const frontendWasScaffolded = await askFrontend(projectDir, answers);
+  const frontendResult = await askFrontend(projectDir, answers);
   await generateDockerCompose(projectDir, answers);
   await generateEnvFiles(projectDir, answers);
   await generateReadme(projectDir, answers);
@@ -458,19 +480,18 @@ export async function runPostScaffold(projectDir, answers) {
   await openInEditor(projectDir);
 
   const isGradle = answers.buildTool?.includes('gradle');
-  const frontendExists = fs.existsSync(path.join(projectDir, 'frontend'));
-  const hasFrontend = frontendExists || answers.arch === 'fullstack';
-  const isFullstack = answers.arch === 'fullstack';
+  const isFullstack = answers.arch === 'fullstack' && frontendResult.scaffolded;
   const springcraftConfig = {
     name: answers.artifactId,
-    arch: isFullstack ? 'fullstack' : answers.arch || 'backend-only',
+    arch: isFullstack ? 'fullstack' : 'backend-only',
     buildTool: answers.buildTool,
     language: answers.language,
     javaVersion: answers.javaVersion,
     springBootVersion: answers.springBootVersion,
     packageName: answers.packageName,
-    hasFrontend: hasFrontend,
-    frontendDir: hasFrontend ? 'frontend' : null,
+    hasFrontend: frontendResult.scaffolded,
+    frontendDir: frontendResult.scaffolded ? 'frontend' : null,
+    frontendStack: frontendResult.stack,
     backendPort: 8080,
     frontendPort: 5173,
     runCommand: isGradle ? './gradlew bootRun' : './mvnw spring-boot:run',

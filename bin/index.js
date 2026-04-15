@@ -40,38 +40,6 @@ function parseFlags(args) {
       flags.help = true;
     } else if (arg === '-v' || arg === '--version') {
       flags.version = true;
-    } else if (arg === '--maven') {
-      flags.buildTool = 'maven-project';
-    } else if (arg === '--gradle') {
-      flags.buildTool = 'gradle-project';
-    } else if (arg === '--gradle-kotlin') {
-      flags.buildTool = 'gradle-project-kotlin';
-    } else if (arg === '--java') {
-      flags.language = 'java';
-    } else if (arg === '--kotlin') {
-      flags.language = 'kotlin';
-    } else if (arg === '--groovy') {
-      flags.language = 'groovy';
-    } else if (arg === '--java-version') {
-      if (i + 1 < args.length) flags.javaVersion = args[++i];
-    } else if (arg === '--boot') {
-      if (i + 1 < args.length) flags.springBootVersion = args[++i];
-    } else if (arg === '--group') {
-      if (i + 1 < args.length) flags.groupId = args[++i];
-    } else if (arg === '--artifact') {
-      if (i + 1 < args.length) flags.artifactId = args[++i];
-    } else if (arg === '--package') {
-      if (i + 1 < args.length) flags.packageName = args[++i];
-    } else if (arg === '--desc' || arg === '--description') {
-      if (i + 1 < args.length) flags.description = args[++i];
-    } else if (arg === '--jar') {
-      flags.packaging = 'jar';
-    } else if (arg === '--war') {
-      flags.packaging = 'war';
-    } else if (arg === '--deps') {
-      if (i + 1 < args.length) flags.dependencies = args[++i].split(',').map(d => d.trim());
-    } else if (arg === '--arch') {
-      if (i + 1 < args.length) flags.arch = args[++i];
     } else if (!arg.startsWith('-')) {
       flags.targetPath = arg === '.' ? process.cwd() : path.resolve(arg);
     }
@@ -85,44 +53,26 @@ function showHelp() {
 springcraft - Modern CLI scaffolder for Spring Boot projects
 
 Usage:
-  springcraft <path>                     Scaffold a new Spring Boot project
+  springcraft .                           Scaffold project (interactive prompts)
+  springcraft <path>                     Scaffold in specific directory
   springcraft --run                       Run backend (Spring Boot)
-  springcraft --run --frontend            Run frontend dev server
-  springcraft --run --dev                 Run backend + frontend concurrently
-  springcraft --build                     Build the project
-  springcraft --build --prod              Build frontend + package jar
+  springcraft --run --frontend            Run frontend only
+  springcraft --run --dev                 Run both (backend + frontend)
+  springcraft --build                     Build project
+  springcraft --build --prod             Production build
   springcraft --docker up                Start Docker services
   springcraft --docker down               Stop Docker services
   springcraft --docker logs               View Docker logs
-  springcraft --info                      Show project info (with ports)
+  springcraft --info                      Show project info
   springcraft --list-presets              List saved presets
-  springcraft --preset <name>             Scaffold with a saved preset
-  springcraft --dry-run                   Show Initializr URL without downloading
+  springcraft --preset <name>            Use saved preset
+  springcraft --dry-run                   Show URL without downloading
   springcraft --help                      Show this help
   springcraft --version                   Show version
 
-Scaffold Options:
-  --maven|--gradle|--gradle-kotlin       Build tool
-  --java|--kotlin|--groovy               Language
-  --java-version <version>               Java version (11, 17, 21, 24)
-  --boot <version>                       Spring Boot version
-  --arch <fullstack|backend-only>        Architecture (default: backend-only)
-  --group <groupId>                      Group ID (e.g., com.example)
-  --artifact <id>                        Artifact ID
-  --package <name>                       Package name
-  --deps <dep1,dep2,...>                Dependencies
-
 Ports:
   Backend:  http://localhost:8080
-  Frontend: http://localhost:5173 (fullstack mode)
-
-Examples:
-  springcraft .                           Create backend-only project
-  springcraft . --arch fullstack          Create fullstack (Backend + Frontend)
-  springcraft ~/projects/my-api           Create in specific directory
-  springcraft --run                       Run from project directory
-  springcraft --run --dev                 Run both backend and frontend
-  springcraft --docker up                 Start Docker services
+  Frontend: http://localhost:5173
 `);
 }
 
