@@ -49,7 +49,7 @@ Ports:
 }
 
 function showVersion() {
-  console.log('springcraft v0.2.0');
+  console.log('springcraft v0.3.0');
 }
 
 export function cli() {

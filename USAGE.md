@@ -83,10 +83,10 @@ springcraft ~/projects/new-app
 
 ### Override Project Name
 
-Use `--artifact` to specify a different project name than the directory:
+Use `--artifact-id` to specify a different project name than the directory:
 
 ```bash
-springcraft ~/projects/api --artifact my-api-service
+springcraft ~/projects/api --artifact-id my-api-service
 ```
 
 ---
@@ -106,7 +106,10 @@ springcraft .
    - `Detailed (FZF)` — Full searchable list with keyboard navigation
    - `None` — Skip dependencies
 
-2. **Build Tool** — Maven or Gradle (Groovy/Kotlin DSL)
+2. **Build Tool** — Maven or Gradle
+   - `maven-project` — Maven project
+   - `gradle-project` — Gradle (Groovy DSL)
+   - `gradle-project-kotlin` — Gradle (Kotlin DSL)
 
 3. **Language** — Java, Kotlin, or Groovy
 
@@ -134,21 +137,18 @@ All options can be passed via CLI flags for full automation:
 |------|-------------|---------|
 | `.` | Use current directory | `springcraft .` |
 | `/path` | Create in specific path | `springcraft ~/projects/api` |
-| `--maven` | Use Maven build tool | `--maven` |
-| `--gradle` | Use Gradle (Groovy DSL) | `--gradle` |
-| `--gradle-kotlin` | Use Gradle (Kotlin DSL) | `--gradle-kotlin` |
-| `--java` | Java language | `--java` |
-| `--kotlin` | Kotlin language | `--kotlin` |
-| `--groovy` | Groovy language | `--groovy` |
+| `--arch <fullstack\|backend-only>` | Project architecture | `--arch fullstack` |
+| `--frontend <react\|vue\|svelte\|angular\|preact\|solid\|lit>` | Add frontend | `--frontend react` |
+| `--build-tool <maven-project\|gradle-project\|gradle-project-kotlin>` | Build tool | `--build-tool maven-project` |
+| `--language <java\|kotlin\|groovy>` | Language | `--language java` |
 | `--java-version <ver>` | Java version (11/17/21/24) | `--java-version 17` |
-| `--boot <ver>` | Spring Boot version | `--boot 3.5.0` |
-| `--group <id>` | Group ID | `--group com.example` |
-| `--artifact <id>` | Artifact ID | `--artifact my-app` |
-| `--package <name>` | Package name | `--package com.example.myapp` |
-| `--desc "<text>"` | Project description | `--desc "My project"` |
-| `--jar` | Jar packaging | `--jar` |
-| `--war` | War packaging | `--war` |
-| `--deps <list>` | Comma-separated deps | `--deps web,data-jpa,lombok` |
+| `--spring-boot-version <ver>` | Spring Boot version | `--spring-boot-version 3.5.0` |
+| `--group-id <id>` | Group ID | `--group-id com.example` |
+| `--artifact-id <id>` | Artifact ID | `--artifact-id my-app` |
+| `--package-name <name>` | Package name | `--package-name com.example.myapp` |
+| `--description "<text>"` | Project description | `--description "My project"` |
+| `--packaging <jar\|war>` | Packaging type | `--packaging jar` |
+| `--dependencies <list>` | Comma-separated deps | `--dependencies web,data-jpa,lombok` |
 | `--dry-run` | Show URL without downloading | `--dry-run` |
 | `--preset <name>` | Load saved preset | `--preset my-preset` |
 | `--list-presets` | List saved presets | `--list-presets` |
@@ -159,15 +159,15 @@ All options can be passed via CLI flags for full automation:
 
 ```bash
 springcraft . \
-  --maven \
-  --java \
+  --build-tool maven-project \
+  --language java \
   --java-version 21 \
-  --boot 3.5.0 \
-  --group com.mycompany \
-  --artifact my-api \
-  --desc "REST API service" \
-  --jar \
-  --deps web,data-jpa,security,validation,lombok,actuator
+  --spring-boot-version 3.5.0 \
+  --group-id com.mycompany \
+  --artifact-id my-api \
+  --description "REST API service" \
+  --packaging jar \
+  --dependencies web,data-jpa,security,validation,lombok,actuator
 ```
 
 ---
@@ -216,6 +216,8 @@ springcraft --list-presets
   }
 }
 ```
+
+Note: Preset format uses camelCase field names internally.
 
 ---
 
@@ -309,14 +311,6 @@ Auto-generated `.env` and `.env.example` based on selected dependencies:
 - Creates `.gitignore` with sensible defaults
 - Commits initial files
 
-### Editor Launch
-
-Open project directly in:
-- VS Code
-- Zed
-- IntelliJ IDEA
-- Cursor
-
 ---
 
 ## Examples
@@ -324,45 +318,45 @@ Open project directly in:
 ### Minimal REST API
 
 ```bash
-springcraft . --maven --java --java-version 17 --boot 3.5.0 --deps web,validation
+springcraft . --build-tool maven-project --language java --java-version 17 --spring-boot-version 3.5.0 --dependencies web,validation
 ```
 
 ### Full-Stack with PostgreSQL
 
 ```bash
 springcraft ~/projects/api \
-  --maven \
-  --java \
+  --build-tool maven-project \
+  --language java \
   --java-version 21 \
-  --boot 3.5.0 \
-  --group com.mycompany \
-  --artifact my-api \
-  --deps web,data-jpa,security,lombok,postgresql,devtools,actuator
+  --spring-boot-version 3.5.0 \
+  --group-id com.mycompany \
+  --artifact-id my-api \
+  --dependencies web,data-jpa,security,lombok,postgresql,devtools,actuator
 ```
 
 ### Microservice
 
 ```bash
 springcraft ~/projects/user-service \
-  --gradle-kotlin \
-  --kotlin \
+  --build-tool gradle-project-kotlin \
+  --language kotlin \
   --java-version 21 \
-  --boot 3.5.0 \
-  --group com.mycompany \
-  --deps webflux,data-redis,security,actuator,cloud-eureka
+  --spring-boot-version 3.5.0 \
+  --group-id com.mycompany \
+  --dependencies webflux,data-redis,security,actuator,cloud-eureka
 ```
 
 ### React Full-Stack
 
 ```bash
 springcraft ~/projects/react-spring \
-  --maven \
-  --java \
+  --build-tool maven-project \
+  --language java \
   --java-version 17 \
-  --boot 3.5.0 \
-  --group com.mycompany \
-  --artifact react-spring \
-  --deps web,data-jpa,security \
+  --spring-boot-version 3.5.0 \
+  --group-id com.mycompany \
+  --artifact-id react-spring \
+  --dependencies web,data-jpa,security \
   --frontend react
 ```
 
@@ -390,9 +384,7 @@ Run frontend dev server only (requires frontend scaffolding).
 springcraft --run --dev
 ```
 
-Run both backend and frontend concurrently with color-coded output:
-- `[backend]` — Spring Boot logs (cyan)
-- `[frontend]` — Frontend dev server logs (magenta)
+Run both backend and frontend concurrently.
 
 ### Building
 
