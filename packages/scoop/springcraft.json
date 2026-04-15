@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/schema.json",
+  "version": "0.3.0",
+  "description": "Modern CLI scaffolder for Spring Boot projects - like Vite but for Spring",
+  "homepage": "https://github.com/fmitesh007/springcraft-cli",
+  "license": "MIT",
+  "url": "https://github.com/fmitesh007/springcraft-cli/releases/download/v0.3.0/springcraft-win.exe",
+  "hash": "sha256:5ea28e5e0f7986f7be7c9cb408905aa3e599cb3434faa632a69f1afa2d9148a5",
+  "bin": "springcraft-win.exe",
+  "checkver": {
+    "github": "https://github.com/fmitesh007/springcraft-cli"
+  },
+  "autoupdate": {
+    "url": "https://github.com/fmitesh007/springcraft-cli/releases/download/v$version/springcraft-win.exe",
+    "hash": {
+      "url": "$url.sha256.txt"
+    }
+  }
+}

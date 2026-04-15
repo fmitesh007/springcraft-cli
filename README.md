@@ -15,7 +15,8 @@
 - 📖 **Smart README** — Auto-generated project documentation
 - 🔧 **Presets** — Save and reuse your favorite configurations
 - 🏷️ **CLI Flags** — Full automation support for CI/CD pipelines
-- 🎨 **Frontend Scaffolding** — Add React, Vue, or Angular in one step
+- 🎨 **Frontend Scaffolding** — Add React, Vue, Svelte, Angular, Preact, Solid, or Lit in one step
+- 🖥️ **Terminal UI** — Beautiful developer dashboard with health checks and API exploration
 - 🗄️ **Git Initialization** — Automatic git setup with sensible defaults
 - 📁 **Path Support** — Create projects in any directory, auto-creates if needed
 
@@ -119,12 +120,38 @@ springcraft/
 ├── bin/
 │   └── index.js          # CLI entry point
 ├── src/
-│   ├── prompts.js        # Interactive prompts & FZF search
-│   ├── downloader.js     # Spring Initializr API client
-│   ├── extractor.js      # ZIP extraction
-│   ├── generator.js      # Orchestration
-│   ├── presets.js        # Preset management
-│   └── postscaffold.js   # Post-scaffold actions
+│   ├── cli/              # CLI entry & flag parsing
+│   │   ├── index.js
+│   │   └── flags.js
+│   ├── core/             # Core orchestration
+│   │   ├── generator.js
+│   │   ├── downloader.js
+│   │   └── extractor.js
+│   ├── prompts/          # Interactive prompts
+│   │   ├── index.js
+│   │   ├── project.js
+│   │   └── dependencies.js
+│   ├── scaffold/         # Post-scaffold actions
+│   │   ├── index.js
+│   │   ├── backend/
+│   │   ├── frontend/
+│   │   ├── docker.js
+│   │   ├── env.js
+│   │   ├── git.js
+│   │   └── readme.js
+│   ├── commands/          # Runtime commands
+│   │   ├── index.js
+│   │   ├── run.js
+│   │   ├── build.js
+│   │   ├── docker.js
+│   │   └── info.js
+│   └── shared/           # Shared utilities
+│       ├── index.js
+│       ├── config.js
+│       ├── errors.js
+│       ├── routes.js
+│       ├── styles.js
+│       └── utils.js
 ├── package.json
 ├── README.md
 └── USAGE.md

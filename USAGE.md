@@ -261,9 +261,21 @@ After project creation, you'll be offered:
 
 ### Frontend Scaffolding
 
-Add a frontend with Vite or Angular:
-- **Vite** — React, React+TS, Vue, Svelte, SolidJS
+Add a frontend with Vite (all 7 frameworks supported):
+- **React** — With Hooks
+- **Vue** — With Composition API
+- **Svelte** — Reactive framework
 - **Angular** — Full Angular CLI setup
+- **Preact** — Lightweight React alternative
+- **Solid** — Fine-grained reactivity
+- **Lit** — Web Components
+
+Each frontend comes with a **Terminal UI Dashboard** featuring:
+- Identity resolver (API testing)
+- JSON response viewer with syntax highlighting
+- API endpoints display
+- Client routes panel
+- Health check indicator
 
 ### Docker Compose
 
@@ -348,10 +360,96 @@ springcraft ~/projects/react-spring \
   --java \
   --java-version 17 \
   --boot 3.5.0 \
-  --deps web,data-jpa,security,thymeleaf
+  --group com.mycompany \
+  --artifact react-spring \
+  --deps web,data-jpa,security \
+  --frontend react
 ```
 
-(Then select React frontend during post-scaffold prompts)
+---
+
+## Project Commands
+
+After scaffolding, `springcraft.json` is created in your project directory. These commands work from within a springcraft project.
+
+### Running the Project
+
+```bash
+springcraft --run
+```
+
+Run backend only (Spring Boot).
+
+```bash
+springcraft --run --frontend
+```
+
+Run frontend dev server only (requires frontend scaffolding).
+
+```bash
+springcraft --run --dev
+```
+
+Run both backend and frontend concurrently with color-coded output:
+- `[backend]` — Spring Boot logs (cyan)
+- `[frontend]` — Frontend dev server logs (magenta)
+
+### Building
+
+```bash
+springcraft --build
+```
+
+Build the project (runs Maven/Gradle build command).
+
+```bash
+springcraft --build --prod
+```
+
+Production build:
+1. Build frontend (if present) and copy to `src/main/resources/static/`
+2. Package the application as jar
+
+### Docker Services
+
+```bash
+springcraft --docker up
+```
+
+Start Docker services defined in `docker-compose.yml`.
+
+```bash
+springcraft --docker down
+```
+
+Stop Docker services.
+
+```bash
+springcraft --docker logs
+```
+
+View Docker logs (follows output).
+
+### Project Info
+
+```bash
+springcraft --info
+```
+
+Display project configuration:
+
+```
+╭─ Project Info ─────────────────────────╮
+│ Name:         my-app                   │
+│ Architecture: fullstack                │
+│ Build Tool:   Maven                   │
+│ Language:     Java 17                 │
+│ Spring Boot:  3.5.0                   │
+│ Frontend:     React (frontend/)       │
+│ Run:          ./mvnw spring-boot:run  │
+│ Build:        ./mvnw clean package    │
+╰────────────────────────────────────────╯
+```
 
 ---
 

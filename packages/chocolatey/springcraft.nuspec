@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://Chocolatey.org/packages/2024/nuspec">
+  <metadata>
+    <id>springcraft</id>
+    <version>0.3.0</version>
+    <title>SpringCraft</title>
+    <authors>fmitesh</authors>
+    <projectUrl>https://github.com/fmitesh007/springcraft-cli</projectUrl>
+    <packageSourceUrl>https://github.com/fmitesh007/springcraft-cli</packageSourceUrl>
+    <description>Modern CLI scaffolder for Spring Boot projects - like Vite but for Spring</description>
+    <licenseUrl>https://github.com/fmitesh007/springcraft-cli/blob/main/LICENSE</licenseUrl>
+    <copyright>Copyright 2024</copyright>
+    <tags>spring-boot spring java cli scaffolder developer-tools</tags>
+    <summary>Modern CLI scaffolder for Spring Boot projects</summary>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
