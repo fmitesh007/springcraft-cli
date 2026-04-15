@@ -3,6 +3,12 @@ import path from 'path';
 import { HELLO_UI_STYLES, API_ROUTES } from '../../../shared/index.js';
 
 export async function generateReactHelloUI(projectDir) {
+  const routes = API_ROUTES.map(r => ({
+    method: r.method,
+    path: r.path,
+    query: r.query || null,
+  }));
+
   const appJsx = `import { useState } from 'react';
 
 function formatJson(json) {
@@ -33,8 +39,6 @@ function App() {
   };
 
   const handleClear = () => { setName(''); setResponse(null); };
-
-  const routes = [${API_ROUTES.map(r => `{ method: '${r.method}', path: '${r.path}'${r.query ? `, query: '${r.query}'` : ''} }`).join(', ')}];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

@@ -41,7 +41,7 @@ export async function scaffoldFrontend(projectDir, framework, cliFlag) {
   }
 }
 
-export async function askFrontendFramework() {
+export async function askFrontendFramework(projectDir) {
   const choice = await p.select({
     message: 'Add a frontend?',
     options: [

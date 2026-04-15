@@ -25,14 +25,14 @@ export async function generateHelloUI(projectDir) {
   
   if (!fs.existsSync(pkgPath)) {
     p.log.warn('Frontend package.json not found, skipping Hello UI generation.');
-    return;
+    return false;
   }
 
   const stack = detectFrontendStack(projectDir);
   
   if (!stack) {
     p.log.warn('Unknown frontend stack, skipping Hello UI generation.');
-    return;
+    return false;
   }
 
   const generatorKey = stack.toLowerCase();
@@ -40,13 +40,19 @@ export async function generateHelloUI(projectDir) {
   
   if (!generator) {
     p.log.warn(`Hello UI not available for ${stack}, skipping.`);
-    return;
+    return false;
   }
 
   try {
     await generator(projectDir);
     p.log.success(`Generated ${stack} Hello UI (replaced default template)`);
+    return true;
   } catch (e) {
     p.log.warn(`Failed to generate Hello UI: ${e.message}`);
+    return false;
   }
+}
+
+export function getAvailableTemplates() {
+  return Object.keys(generators);
 }

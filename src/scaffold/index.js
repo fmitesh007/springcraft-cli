@@ -32,7 +32,7 @@ export async function runPostScaffold(projectDir, answers) {
     if (answers.frontend && answers.frontend !== 'none') {
       frontendResult = await scaffoldFrontend(projectDir, answers.frontend, answers.frontend);
     } else {
-      const choice = await askFrontendFramework();
+      const choice = await askFrontendFramework(projectDir);
       if (choice && choice !== 'none') {
         frontendResult = await scaffoldFrontend(projectDir, choice, null);
       }
