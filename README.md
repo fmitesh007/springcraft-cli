@@ -38,7 +38,7 @@ springcraft /path/to/any/directory
 ### Automated Mode
 
 ```bash
-springcraft . --maven --java --java-version 17 --deps web,data-jpa,lombok
+springcraft . --build-tool maven-project --language java --java-version 17 --dependencies web,data-jpa,lombok
 ```
 
 ## Installation
@@ -46,35 +46,31 @@ springcraft . --maven --java --java-version 17 --deps web,data-jpa,lombok
 ### Arch Linux (AUR)
 
 ```bash
-# Using yay or paru
 yay -S springcraft
 # or
 paru -S springcraft
 ```
 
-### macOS/Linux (Homebrew) (under maintenance)
+### macOS / Linux (Homebrew)
 
 ```bash
 brew tap fmitesh007/springcraft
 brew install springcraft
 ```
 
-### Linux
-
-```bash
-curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
-```
-
-### MacOS
-
-```bash
-curl -sSL https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.sh | bash
-```
-
-### Windows (powershell)
+### Windows (Scoop)
 
 ```powershell
-irm https://raw.githubusercontent.com/fmitesh007/springcraft-cli/main/scripts/install.ps1 | iex
+scoop bucket add springcraft https://github.com/fmitesh007/scoop-springcraft
+scoop install springcraft
+```
+
+### npm (Global with npm link)
+
+```bash
+npm install -g springcraft
+# or
+npm link
 ```
 
 ### Manual Download
@@ -92,21 +88,6 @@ sudo mv springcraft-macos /usr/local/bin/springcraft
 
 # Windows
 irm https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
-```
-
-### From npm (requires Node.js) (under maintenance)
-
-```bash
-npm install -g springcraft
-```
-
-### From source (requires Node.js)
-
-```bash
-git clone https://github.com/fmitesh007/springcraft-cli.git
-cd springcraft-cli
-npm install
-npm link
 ```
 
 ## Usage

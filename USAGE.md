@@ -15,25 +15,35 @@
 
 ## Installation
 
-### Quick Install (Linux)
+### Arch Linux (AUR)
 
 ```bash
-curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-linux && chmod +x springcraft-linux
+yay -S springcraft
+# or
+paru -S springcraft
 ```
 
-### Quick Install (macOS)
+### macOS / Linux (Homebrew)
 
 ```bash
-curl -sLO https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-macos && chmod +x springcraft-macos
+brew tap fmitesh007/springcraft
+brew install springcraft
 ```
 
-### Quick Install (Windows PowerShell)
+### Windows (Scoop)
 
 ```powershell
-iwr https://github.com/fmitesh007/springcraft/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
+scoop bucket add springcraft https://github.com/fmitesh007/scoop-springcraft
+scoop install springcraft
 ```
 
-### Download Binaries
+### npm (Global)
+
+```bash
+npm install -g springcraft
+```
+
+### Manual Download
 
 | Platform | Download |
 |----------|----------|
@@ -43,10 +53,19 @@ iwr https://github.com/fmitesh007/springcraft/releases/latest/download/springcra
 
 From: https://github.com/fmitesh007/springcraft/releases/latest
 
-### Install to PATH
-
 ```bash
-sudo mv springcraft-* /usr/local/bin/springcraft
+# Linux
+curl -sLO https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-linux
+chmod +x springcraft-linux
+sudo mv springcraft-linux /usr/local/bin/springcraft
+
+# macOS
+curl -sLO https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-macos
+chmod +x springcraft-macos
+sudo mv springcraft-macos /usr/local/bin/springcraft
+
+# Windows (PowerShell)
+irm https://github.com/fmitesh007/springcraft-cli/releases/latest/download/springcraft-win.exe -OutFile springcraft.exe
 ```
 
 ---
