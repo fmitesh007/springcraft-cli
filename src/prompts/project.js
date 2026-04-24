@@ -114,6 +114,17 @@ export async function askProjectQuestions(flags = {}) {
 
   if (p.isCancel(packaging)) { p.cancel('Cancelled.'); process.exit(0); }
 
+  const configFormat = await p.select({
+    message: 'Configuration format:',
+    options: [
+      { value: 'properties', label: 'Properties (.properties)', hint: 'Traditional config format' },
+      { value: 'yaml', label: 'YAML (.yml)', hint: 'Recommended for nested config' },
+    ],
+    initialValue: flags.configFormat || 'yaml',
+  });
+
+  if (p.isCancel(configFormat)) { p.cancel('Cancelled.'); process.exit(0); }
+
   return {
     artifactId,
     arch,
@@ -125,5 +136,6 @@ export async function askProjectQuestions(flags = {}) {
     packageName,
     description,
     packaging,
+    configFormat,
   };
 }

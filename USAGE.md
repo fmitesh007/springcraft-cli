@@ -9,6 +9,10 @@
 - [Presets](#presets)
 - [Dependency Selection](#dependency-selection)
 - [Post-Scaffold Options](#post-scaffold-options)
+- [Project Commands](#project-commands)
+- [Adding Dependencies to Existing Project](#adding-dependencies-to-existing-project)
+- [Adding Services to Project](#adding-services-to-project)
+- [Compiling Services](#compiling-services)
 - [Examples](#examples)
 
 ---
@@ -171,6 +175,9 @@ All options can be passed via CLI flags for full automation:
 | `--dry-run` | Show URL without downloading | `--dry-run` |
 | `--preset <name>` | Load saved preset | `--preset my-preset` |
 | `--list-presets` | List saved presets | `--list-presets` |
+| `--add-dep` | Add dependencies to existing project | `--add-dep` |
+| `--add-service` | Add new microservice to project | `--add-service` |
+| `--compile-service`, `--cs` | Compile a service | `--cs` |
 | `--help`, `-h` | Show help | `--help` |
 | `--version`, `-v` | Show version | `--version` |
 
@@ -447,7 +454,7 @@ View Docker logs (follows output).
 springcraft --info
 ```
 
-Display project configuration:
+Display project configuration including services:
 
 ```
 ╭─ Project Info ─────────────────────────╮
@@ -457,10 +464,91 @@ Display project configuration:
 │ Language:     Java 17                 │
 │ Spring Boot:  3.5.0                   │
 │ Frontend:     React (frontend/)       │
+│ Services:     user, order, product    │
 │ Run:          ./mvnw spring-boot:run  │
 │ Build:        ./mvnw clean package    │
 ╰────────────────────────────────────────╯
 ```
+
+---
+
+## Adding Dependencies to Existing Project
+
+Add dependencies to an existing Spring Boot project:
+
+```bash
+cd my-existing-project
+springcraft --add-dep
+```
+
+### Dependency Sources
+
+1. **Spring Initializr** — Official Spring Boot starters (FZF-style search)
+2. **Maven Central** — Any Maven artifact (requires coordinates)
+
+### FZF Search Controls
+
+- `↑/↓` — Navigate
+- `SPACE` — Toggle selection
+- `ENTER` — Confirm
+- `ESC` — Skip/finish
+- `BACKSPACE` — Clear search
+- Type to filter in real-time
+
+---
+
+## Adding Services to Project
+
+Add a complete microservice to your project:
+
+```bash
+cd my-project
+springcraft --add-service
+```
+
+### What Gets Created
+
+For each service, the following structure is generated:
+
+```
+src/main/java/{groupId}/{serviceName}/
+├── model/
+│   └── {ServiceName}.java          # JPA Entity
+├── repository/
+│   └── {ServiceName}Repository.java # Spring Data JPA
+├── service/
+│   └── {ServiceName}Service.java   # Business logic
+├── controller/
+│   └── {ServiceName}Controller.java # REST endpoints
+├── dto/
+│   ├── {ServiceName}Request.java   # Request DTO
+│   └── {ServiceName}Response.java  # Response DTO
+└── config/
+    └── {ServiceName}Config.java    # Configuration
+```
+
+### After Creation
+
+- Automatic compilation prompt
+- API endpoint: `/api/{serviceName}`
+
+---
+
+## Compiling Services
+
+Compile services in your project:
+
+```bash
+springcraft --compile-service
+```
+
+Or use short alias:
+
+```bash
+springcraft --cs
+```
+
+If multiple services exist, you'll be prompted to select which one to compile.
 
 ---
 

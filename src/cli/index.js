@@ -1,5 +1,5 @@
 import { run as scaffold } from '../core/generator.js';
-import { handleRun, handleBuild, handleDocker, handleInfo } from '../commands/index.js';
+import { handleRun, handleBuild, handleDocker, handleInfo, handleAddDeps, handleAddService, handleCompileService } from '../commands/index.js';
 import { listPresets, loadPreset } from '../presets.js';
 import { parseFlags } from './flags.js';
 
@@ -7,7 +7,7 @@ function showHelp() {
   console.log(`
 springcraft - Modern CLI scaffolder for Spring Boot projects
 
-Usage:
+Commands:
   springcraft .                           Scaffold project (interactive prompts)
   springcraft <path>                     Scaffold in specific directory
   springcraft --run                       Run backend (Spring Boot)
@@ -21,6 +21,9 @@ Usage:
   springcraft --info                      Show project info
   springcraft --list-presets              List saved presets
   springcraft --preset <name>            Use saved preset
+  springcraft --add-dep                   Add dependencies to existing project
+  springcraft --add-service               Add new microservice to project
+  springcraft --compile-service           Compile a service in the project
   springcraft --dry-run                   Show URL without downloading
   springcraft --help                      Show this help
   springcraft --version                   Show version
@@ -52,7 +55,7 @@ function showVersion() {
   console.log('springcraft v0.3.0');
 }
 
-export function cli() {
+export async function cli() {
   const args = process.argv.slice(2);
   const flags = parseFlags(args);
 
@@ -94,6 +97,21 @@ export function cli() {
 
   if (flags.info) {
     handleInfo();
+    process.exit(0);
+  }
+
+  if (flags.addDeps) {
+    await handleAddDeps();
+    process.exit(0);
+  }
+
+  if (flags.addService) {
+    await handleAddService();
+    process.exit(0);
+  }
+
+  if (flags.compileService) {
+    await handleCompileService();
     process.exit(0);
   }
 

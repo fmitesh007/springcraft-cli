@@ -53,6 +53,12 @@ export function parseFlags(args) {
       if (i + 1 < args.length) flags.description = args[++i];
     } else if (arg === '--packaging') {
       if (i + 1 < args.length) flags.packaging = args[++i];
+    } else if (arg === '--add-deps' || arg === '--add-dep') {
+      flags.addDeps = true;
+    } else if (arg === '--add-services' || arg === '--add-service' || arg === '--add-svc') {
+      flags.addService = true;
+    } else if (arg === '--compile-service' || arg === '--compile-svc' || arg === '--cs') {
+      flags.compileService = true;
     } else if (arg === '--dependencies') {
       if (i + 1 < args.length) {
         flags.dependencies = args[++i].split(',').filter(Boolean);

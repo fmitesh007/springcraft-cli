@@ -19,6 +19,9 @@
 - 🖥️ **Terminal UI** — Beautiful developer dashboard with health checks and API exploration
 - 🗄️ **Git Initialization** — Automatic git setup with sensible defaults
 - 📁 **Path Support** — Create projects in any directory, auto-creates if needed
+- 🏗️ **Add Dependencies** — Add dependencies to existing projects with FZF search
+- 🔧 **Add Services** — Generate complete microservice structure (Model, Repository, Service, Controller, DTOs)
+- ⚙️ **Compile Services** — Compile individual services in the project
 
 ## Quick Start
 
@@ -125,7 +128,10 @@ springcraft/
 │   │   ├── run.js
 │   │   ├── build.js
 │   │   ├── docker.js
-│   │   └── info.js
+│   │   ├── info.js
+│   │   ├── add-deps.js
+│   │   ├── add-service.js
+│   │   └── compile-service.js
 │   └── shared/           # Shared utilities
 │       ├── index.js
 │       ├── config.js

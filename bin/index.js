@@ -2,4 +2,7 @@
 
 import { cli } from '../src/cli/index.js';
 
-cli();
+cli().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
